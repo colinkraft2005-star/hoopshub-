@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/torvik.js",
+      "src": "torvik.js",
       "use": "@vercel/node"
     },
     {
@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/api/torvik",
-      "dest": "/api/torvik.js"
+      "dest": "/torvik.js"
     },
     {
       "src": "/(.*)",
