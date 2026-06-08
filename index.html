@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HoopsHub — Staff Cooperative Evaluation Sandbox</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080808;--sidebar:#0e0e0e;--surface:#131313;--surface2:#1a1a1a;--surface3:#202020;
+  --border:#252525;--border2:#303030;--text:#efefef;--text2:#888;--text3:#4a4a4a;
+  --accent:#e8f048;--accent2:#c4cc30;--green:#2ecc71;--red:#e74c3c;--blue:#3498db;--amber:#f39c12;--purple:#9b59b6;
+  --sidebar-w:240px;--radius:5px;--radius-lg:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;display:flex;}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:.06em;color:var(--accent);}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.08em;margin-top:2px;}
+.sidebar-search{padding:10px 12px;border-bottom:1px solid var(--border);}
+.search-input{width:100%;height:32px;padding:0 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;}
+.search-input:focus{outline:none;border-color:var(--accent);color:var(--text);}
+.search-input::placeholder{color:var(--text3);}
+.mode-toggle{display:flex;padding:10px 12px;gap:4px;border-bottom:1px solid var(--border);}
+.mode-btn{flex:1;padding:5px 0;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.05em;text-align:center;transition:all .15s;}
+.mode-btn.active{background:rgba(232,240,72,.1);color:var(--accent);border-color:rgba(232,240,72,.3);}
+.sidebar-nav{padding:8px 0;flex:1;}
+.nav-section{padding:8px 12px 4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;border-left:2px solid transparent;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--accent);background:rgba(232,240,72,.05);border-left-color:var(--accent);}
+.nav-icon{font-size:13px;width:16px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.sidebar-bottom{padding:12px;border-top:1px solid var(--border);}
+.api-key-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:5px;}
+.api-key-input{width:100%;height:28px;padding:0 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'DM Mono',monospace;font-size:10px;}
+.api-key-input:focus{outline:none;border-color:var(--border2);}
+
+/* ── Main Panel ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:44px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.topbar-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--text);}
+.topbar-sub{font-size:11px;color:var(--text3);}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.content{flex:1;overflow-y:auto;padding:20px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── Module panels ── */
+.module{display:none;}.module.active{display:block;}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;}
+.card-hdr{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── Grid ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;}
+input[type=text],input[type=number],select{height:30px;padding:0 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;width:100%;}
+input:focus,select:focus{outline:none;border-color:var(--border2);}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%234a4a4a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+select option{background:#1a1a1a;}
+
+/* ── Buttons ── */
+.btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;transition:all .15s;}
+.btn:hover{background:var(--border);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn-accent{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
+.btn-accent:hover{background:var(--accent2);}
+.btn-full{width:100%;text-align:center;}
+.btn-sm{padding:4px 10px;font-size:11px;}
+
+/* ── Pre-grade panel ── */
+.pregradecard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;}
+.pg-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.pg-name{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;}
+.pg-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.pg-score-wrap{text-align:right;}
+.pg-score{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;line-height:1;}
+.pg-score-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.08em;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;font-weight:600;margin-top:5px;letter-spacing:.04em;}
+.badge-up{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.25);}
+.badge-down{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.badge-neutral{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+.mini-bars{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;}
+.mini-bar-row{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text2);margin-bottom:2px;}
+.mini-bar-track{height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+.mini-bar-fill{height:100%;border-radius:1px;}
+
+/* ── Stage pips ── */
+.stage-pips{display:flex;gap:5px;margin-bottom:12px;align-items:center;}
+.pip{width:24px;height:3px;border-radius:2px;background:var(--border2);transition:all .2s;}
+.pip.done{background:var(--text3);}
+.pip.active{background:var(--accent);}
+.stage-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+
+/* ── Chat ── */
+.chat-wrap{display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;margin-bottom:10px;padding-right:4px;}
+.chat-wrap::-webkit-scrollbar{width:3px;}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);}
+.msg{padding:10px 12px;border-radius:6px;font-size:12px;line-height:1.6;max-width:90%;}
+.msg-ai{background:var(--surface2);border:1px solid var(--border);color:var(--text);align-self:flex-start;}
+.msg-user{background:rgba(232,240,72,.07);border:1px solid rgba(232,240,72,.15);color:var(--text);align-self:flex-end;}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end;}
+textarea{flex:1;min-height:56px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.5;resize:vertical;}
+textarea:focus{outline:none;border-color:var(--border2);}
+.chat-hint{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:5px;}
+
+/* ── Blur reveal ── */
+.blur-wrap{position:relative;}
+.blur-mask{position:absolute;inset:0;backdrop-filter:blur(14px);background:rgba(8,8,8,.75);border-radius:var(--radius-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;}
+.blur-mask p{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);}
+
+/* ── Result ── */
+.result-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.result-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;}
+.result-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.score-trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.score-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;}
+.score-num{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;line-height:1;}
+.score-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px;letter-spacing:.06em;}
+.bar-wrap{margin-bottom:8px;}
+.bar-row{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:3px;}
+.bar-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+.proj-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.proj-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;}
+.proj-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:4px;}
+.proj-val{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.tags-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.tag{padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.03em;}
+.tag-off{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+.tag-def{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.tag-int{background:rgba(155,89,182,.1);color:var(--purple);border:1px solid rgba(155,89,182,.25);}
+.tag-acc{background:rgba(232,240,72,.1);color:var(--accent);border:1px solid rgba(232,240,72,.25);}
+.flag{padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;font-weight:600;margin:2px;}
+.flag-g{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.25);}
+.flag-r{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.comp-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px;}
+.comp-hdr{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;margin-bottom:8px;}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.comp-item{}
+.comp-tier-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.06em;margin-bottom:3px;}
+.comp-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+.comp-why{font-size:10px;color:var(--text2);line-height:1.4;}
+.summary-box{font-size:12px;line-height:1.7;color:var(--text);}
+.nil-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.nil-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;}
+.nil-value{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;}
+.nil-arbitrage{font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;}
+.nil-up{background:rgba(46,204,113,.1);color:var(--green);}
+.nil-down{background:rgba(231,76,60,.1);color:var(--red);}
+.export-btn{background:transparent;border:1px solid var(--border2);border-radius:var(--radius);padding:6px 12px;color:var(--text2);cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;transition:all .15s;}
+.export-btn:hover{color:var(--text);border-color:var(--text3);}
+
+/* ── Tier badge ── */
+.tier-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.04em;}
+.t1{background:rgba(232,240,72,.15);color:var(--accent);border:1px solid rgba(232,240,72,.3);}
+.t2{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.25);}
+.t3{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+.t4{background:rgba(243,156,18,.1);color:var(--amber);border:1px solid rgba(243,156,18,.25);}
+.t5{background:rgba(155,89,182,.1);color:var(--purple);border:1px solid rgba(155,89,182,.25);}
+.t6{background:rgba(100,100,100,.1);color:var(--text3);border:1px solid rgba(100,100,100,.2);}
+
+/* ── Board table ── */
+.board-filters{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
+.filter-btn{padding:3px 10px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.04em;transition:all .15s;}
+.filter-btn:hover{color:var(--text2);}
+.filter-btn.active{color:var(--accent);border-color:rgba(232,240,72,.3);background:rgba(232,240,72,.05);}
+.board-table{width:100%;border-collapse:collapse;}
+.board-table th{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.board-table td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.board-table tr:last-child td{border-bottom:none;}
+.board-table tr:hover td{background:var(--surface2);}
+.board-name{font-weight:600;}
+.board-sub{font-size:10px;color:var(--text2);margin-top:1px;}
+.board-score{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 5px;}
+.del-btn:hover{color:var(--red);}
+.empty-state{text-align:center;padding:3rem;color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;}
+
+/* ── Scheme panel ── */
+.lineup-builder{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.lineup-slot{width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px;text-align:center;cursor:pointer;transition:all .15s;position:relative;}
+.lineup-slot:hover{border-color:var(--border2);}
+.lineup-slot.active{border-color:var(--accent);background:rgba(232,240,72,.05);}
+.lineup-slot.warning{border-color:var(--amber);}
+.lineup-pos{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px;}
+.lineup-name{font-size:11px;font-weight:600;color:var(--text);}
+.lineup-rating{font-family:'DM Mono',monospace;font-size:9px;color:var(--text2);margin-top:2px;}
+.geometry-alert{padding:8px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;margin-bottom:10px;font-family:'DM Mono',monospace;}
+.alert-warn{background:rgba(243,156,18,.1);color:var(--amber);border:1px solid rgba(243,156,18,.3);}
+.alert-ok{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.3);}
+
+/* ── Spinner ── */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:5px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Steps ── */
+.steps-row{display:flex;gap:5px;margin-bottom:14px;}
+.step-dot{width:5px;height:5px;border-radius:50%;background:var(--border2);transition:all .2s;}
+.step-dot.active{background:var(--accent);width:16px;border-radius:3px;}
+.step-dot.done{background:var(--text3);}
+
+/* ── Err ── */
+.err-msg{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:var(--radius);padding:7px 10px;font-size:11px;color:var(--red);margin-bottom:10px;display:none;}
+
+/* ── Draft board ── */
+.draft-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.draft-rank{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--text3);min-width:36px;}
+.draft-info{flex:1;}
+.draft-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;}
+.draft-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.draft-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.draft-summary{font-size:11px;color:var(--text2);line-height:1.6;margin-top:6px;}
+.draft-grade{text-align:right;}
+.draft-ovr{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">HOOPSHUB</div>
+    <div class="logo-sub">Staff Cooperative Evaluation Sandbox</div>
+  </div>
+
+  <div class="sidebar-search">
+    <input type="text" class="search-input" id="global-search" placeholder="search players...">
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-college" onclick="setMode('college',this)">COLLEGE / PORTAL</button>
+    <button class="mode-btn" id="mode-hs" onclick="setMode('hs',this)">HS / INTL</button>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section">boards</div>
+    <div class="nav-item active" onclick="switchModule('portal',this)">
+      <span class="nav-icon">📊</span> Transfer Portal Hub
+      <span class="nav-badge" id="portal-count">0</span>
+    </div>
+    <div class="nav-item" onclick="switchModule('hs',this)">
+      <span class="nav-icon">🏀</span> High School Recruiting
+      <span class="nav-badge" id="hs-count">0</span>
+    </div>
+    <div class="nav-item" onclick="switchModule('scheme',this)">
+      <span class="nav-icon">⚙️</span> Internal Scheme Panel
+    </div>
+    <div class="nav-item" onclick="switchModule('draft',this)">
+      <span class="nav-icon">🔮</span> NBA Draft Personnel
+      <span class="nav-badge" id="draft-count">0</span>
+    </div>
+    <div class="nav-section" style="margin-top:8px">evaluate</div>
+    <div class="nav-item" onclick="switchModule('eval',this)">
+      <span class="nav-icon">✦</span> New Evaluation
+    </div>
+    <div class="nav-item" onclick="switchModule('ucla',this)">
+      <span class="nav-icon">🐻</span> UCLA Roster
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="api-key-label">ANTHROPIC API KEY</div>
+    <input type="password" class="api-key-input" id="api-key" placeholder="sk-ant-...">
+  </div>
+</div>
+
+<!-- ═══ MAIN PANEL ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <span class="topbar-title" id="topbar-title">Transfer Portal Hub</span>
+      <span class="topbar-sub" id="topbar-sub" style="margin-left:10px">· Power 4 & High Mid-Major targets</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)" id="mode-indicator">COLLEGE MODE</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── PORTAL MODULE ── -->
+    <div class="module active" id="module-portal">
+      <div class="board-filters">
+        <button class="filter-btn active" onclick="filterBoard('portal','all',this)">all</button>
+        <button class="filter-btn" onclick="filterBoard('portal','guard',this)">guards</button>
+        <button class="filter-btn" onclick="filterBoard('portal','wing',this)">wings</button>
+        <button class="filter-btn" onclick="filterBoard('portal','big',this)">bigs</button>
+        <button class="filter-btn" onclick="filterBoard('portal','t1',this)">tier 1</button>
+        <button class="filter-btn" onclick="filterBoard('portal','t2',this)">tier 2</button>
+        <button class="filter-btn" onclick="filterBoard('portal','t3',this)">tier 3</button>
+        <button class="filter-btn" onclick="filterBoard('portal','t4',this)">tier 4</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="empty-state" id="portal-empty">no portal evaluations yet — run a new evaluation to add players</div>
+        <table class="board-table" id="portal-table" style="display:none">
+          <thead><tr><th>#</th><th>player</th><th>tier</th><th>pre</th><th>final</th><th>grade</th><th>NIL value</th><th>arbitrage</th><th></th></tr></thead>
+          <tbody id="portal-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── HS MODULE ── -->
+    <div class="module" id="module-hs">
+      <div class="board-filters">
+        <button class="filter-btn active" onclick="filterBoard('hs','all',this)">all</button>
+        <button class="filter-btn" onclick="filterBoard('hs','sleeper',this)">🚨 sleeper flags</button>
+        <button class="filter-btn" onclick="filterBoard('hs','consensus',this)">high consensus</button>
+        <button class="filter-btn" onclick="filterBoard('hs','variance',this)">staff variance</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="empty-state" id="hs-empty">no HS / international targets evaluated yet</div>
+        <table class="board-table" id="hs-table" style="display:none">
+          <thead><tr><th>#</th><th>prospect</th><th>tier</th><th>pre</th><th>final</th><th>grade</th><th>sleeper</th><th>consensus</th><th></th></tr></thead>
+          <tbody id="hs-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SCHEME MODULE ── -->
+    <div class="module" id="module-scheme">
+      <div class="card">
+        <div class="card-hdr">lineup simulator</div>
+        <div class="lineup-builder" id="lineup-builder">
+          <div class="lineup-slot" onclick="selectLineupSlot(0)" id="slot-0"><div class="lineup-pos">PG</div><div class="lineup-name" id="slot-name-0">empty</div><div class="lineup-rating" id="slot-rating-0">—</div></div>
+          <div class="lineup-slot" onclick="selectLineupSlot(1)" id="slot-1"><div class="lineup-pos">SG</div><div class="lineup-name" id="slot-name-1">empty</div><div class="lineup-rating" id="slot-rating-1">—</div></div>
+          <div class="lineup-slot" onclick="selectLineupSlot(2)" id="slot-2"><div class="lineup-pos">SF</div><div class="lineup-name" id="slot-name-2">empty</div><div class="lineup-rating" id="slot-rating-2">—</div></div>
+          <div class="lineup-slot" onclick="selectLineupSlot(3)" id="slot-3"><div class="lineup-pos">PF</div><div class="lineup-name" id="slot-name-3">empty</div><div class="lineup-rating" id="slot-rating-3">—</div></div>
+          <div class="lineup-slot" onclick="selectLineupSlot(4)" id="slot-4"><div class="lineup-pos">C</div><div class="lineup-name" id="slot-name-4">empty</div><div class="lineup-rating" id="slot-rating-4">—</div></div>
+        </div>
+        <div id="geometry-alerts"></div>
+        <div id="player-picker" style="display:none">
+          <div class="card-hdr" style="margin-top:8px">select player for slot</div>
+          <div id="picker-list" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+        </div>
+      </div>
+
+      <!-- ── TIEBREAKER COMPARISON TOOL ── -->
+      <div class="card">
+        <div class="card-hdr">player comparison — tiebreaker</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px;line-height:1.6">select two players, check everything your team needs. see who does more for you across your specific combination.</div>
+        <div class="g2" style="margin-bottom:14px">
+          <div class="field">
+            <label>player A</label>
+            <select id="cmp-a" onchange="runComparison()"><option value="">select player...</option></select>
+          </div>
+          <div class="field">
+            <label>player B</label>
+            <select id="cmp-b" onchange="runComparison()"><option value="">select player...</option></select>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:8px">WHAT DOES YOUR TEAM NEED?</div>
+          <div id="cmp-checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+        </div>
+        <button class="btn btn-accent btn-full" onclick="runComparison()" style="margin-bottom:10px">compare</button>
+        <div id="cmp-result" style="display:none"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">spacing rules</div>
+        <div id="spacing-rules-list" style="font-size:11px;color:var(--text2);line-height:2;">
+          <div>🟡 <strong>Jovic Rule:</strong> When Jovic is on the floor he must be the only non-shooter. All other 4 players must be 35%+ from three.</div>
+          <div>🟡 <strong>Booker Rule:</strong> Booker IS the spacing. Perry and Petty attack off his gravity. No top-of-key iso for Booker.</div>
+          <div>🔴 <strong>Jovic + Dailey + Booker:</strong> Do not play all three together — kills paint spacing.</div>
+          <div>🟢 <strong>Hard Hedge scheme:</strong> Petty and Perry fight over screens. Bigs blitz and recover. STL% target for Petty: 2.5%+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DRAFT MODULE ── -->
+    <div class="module" id="module-draft">
+      <div class="board-filters">
+        <button class="filter-btn active" onclick="filterBoard('draft','all',this)">all</button>
+        <button class="filter-btn" onclick="filterBoard('draft','guard',this)">guards</button>
+        <button class="filter-btn" onclick="filterBoard('draft','wing',this)">wings</button>
+        <button class="filter-btn" onclick="filterBoard('draft','big',this)">bigs</button>
+      </div>
+      <div id="draft-cards-container">
+        <div class="empty-state" id="draft-empty">no draft prospects evaluated yet</div>
+        <div id="draft-cards"></div>
+      </div>
+    </div>
+
+    <!-- ── EVAL MODULE ── -->
+    <div class="module" id="module-eval">
+      <div id="step-stats">
+        <div class="steps-row"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:6px;letter-spacing:.06em">stats input</span></div>
+        <div id="form-err" class="err-msg"></div>
+        <div class="card">
+          <div class="card-hdr">player info</div>
+          <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+            <input type="text" id="torvik-search" placeholder="type player name and fetch stats..." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+            <button class="btn btn-accent" onclick="fetchTorvik()" style="white-space:nowrap;padding:8px 14px">fetch torvik</button>
+          </div>
+          <div id="torvik-status" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:8px;min-height:14px"></div>
+          <div class="g4" style="margin-bottom:10px">
+            <div class="field"><label>name</label><input type="text" id="p-name" placeholder="Player Name"></div>
+            <div class="field"><label>school / origin</label><input type="text" id="p-school" placeholder="UCLA"></div>
+            <div class="field"><label>age</label><input type="number" id="p-age" placeholder="19" min="16" max="26"></div>
+            <div class="field"><label>height</label><input type="text" id="p-ht" placeholder='6&apos;4"'></div>
+          </div>
+          <div class="g4" style="margin-bottom:10px">
+            <div class="field"><label>class</label>
+              <select id="p-cls"><option value="Fr">freshman</option><option value="So" selected>sophomore</option><option value="Jr">junior</option><option value="Sr">senior</option></select>
+            </div>
+            <div class="field"><label>position group</label>
+              <select id="p-pos"><option value="">select...</option><option value="guard">guard</option><option value="wing">wing/forward</option><option value="big">big</option></select>
+            </div>
+            <div class="field"><label>college role</label>
+              <select id="p-arch"><option value="">select pos first</option></select>
+            </div>
+            <div class="field"><label>conference</label>
+              <select id="p-conf"><option value="4" selected>power 4</option><option value="3">high mid-major</option><option value="2">mid-major</option><option value="1">low-major</option><option value="5">intl elite</option></select>
+            </div>
+          </div>
+          <div class="g3">
+            <div class="field"><label>projected team role</label>
+              <select id="p-team-role"><option value="primary">primary option</option><option value="second" selected>elite 2nd option</option><option value="third">3rd option / role starter</option><option value="rotation">rotation piece</option><option value="specialist">specialist</option></select>
+            </div>
+            <div class="field"><label>recruit / portal rank</label>
+              <select id="p-rank"><option value="5star">5-star</option><option value="4star">4-star</option><option value="3star" selected>3-star</option><option value="unranked">unranked</option><option value="portal-high">high portal value</option><option value="portal-mid">mid portal</option><option value="portal-low">low portal</option></select>
+            </div>
+            <div class="field"><label>board target</label>
+              <select id="p-board"><option value="portal">transfer portal</option><option value="hs">HS / international</option><option value="draft">NBA draft</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">torvik stats</div>
+          <div class="g4" style="margin-bottom:8px">
+            <div class="field"><label>TS%</label><input type="number" id="s-ts" placeholder="59"></div>
+            <div class="field"><label>3P%</label><input type="number" id="s-3p" placeholder="37"></div>
+            <div class="field"><label>3PA/100</label><input type="number" id="s-3r" placeholder="8" step=".1"></div>
+            <div class="field"><label>FT%</label><input type="number" id="s-ft" placeholder="80"></div>
+          </div>
+          <div class="g4" style="margin-bottom:8px">
+            <div class="field"><label>close 2%</label><input type="number" id="s-c2" placeholder="60"></div>
+            <div class="field"><label>far 2%</label><input type="number" id="s-f2" placeholder="42"></div>
+            <div class="field"><label>USG%</label><input type="number" id="s-usg" placeholder="21"></div>
+            <div class="field"><label>ORTG</label><input type="number" id="s-ortg" placeholder="115"></div>
+          </div>
+          <div class="g4" style="margin-bottom:8px">
+            <div class="field"><label>AST%</label><input type="number" id="s-ast" placeholder="15"></div>
+            <div class="field"><label>TOV%</label><input type="number" id="s-tov" placeholder="14"></div>
+            <div class="field"><label>BPM</label><input type="number" id="s-bpm" placeholder="2" step=".1"></div>
+            <div class="field"><label>DBPM</label><input type="number" id="s-dbpm" placeholder="1" step=".1"></div>
+          </div>
+          <div class="g4" style="margin-bottom:8px">
+            <div class="field"><label>STL%</label><input type="number" id="s-stl" placeholder="1.5" step=".1"></div>
+            <div class="field"><label>BLK%</label><input type="number" id="s-blk" placeholder="1" step=".1"></div>
+            <div class="field"><label>FTR</label><input type="number" id="s-ftr" placeholder="40"></div>
+            <div class="field"><label>fouls/40</label><input type="number" id="s-foul" placeholder="3.5" step=".1"></div>
+          </div>
+          <div class="g4">
+            <div class="field"><label>ORB%</label><input type="number" id="s-orb" placeholder="4" step=".1"></div>
+            <div class="field"><label>DRB%</label><input type="number" id="s-drb" placeholder="12" step=".1"></div>
+            <div class="field"><label>MIN%</label><input type="number" id="s-min" placeholder="60"></div>
+            <div class="field"><label>PRPG</label><input type="number" id="s-prpg" placeholder="2" step=".1"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">measurables</div>
+          <div class="g4">
+            <div class="field"><label>weight (lbs)</label><input type="number" id="m-wt" placeholder="200"></div>
+            <div class="field"><label>wingspan</label><input type="text" id="m-ws" placeholder='6&apos;6"'></div>
+            <div class="field"><label>standing reach</label><input type="text" id="m-sr" placeholder='8&apos;4"'></div>
+            <div class="field"><label>athleticism 1-10</label><input type="number" id="m-ath" placeholder="7" min="1" max="10"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">NIL market</div>
+          <div class="g2">
+            <div class="field"><label>portal asking price ($)</label><input type="number" id="nil-ask" placeholder="150000"></div>
+            <div class="field"><label>context note (optional)</label><input type="text" id="nil-note" placeholder="e.g. high portal demand"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">kenpom context</div>
+          <div class="g3" style="margin-bottom:10px">
+            <div class="field"><label>pace rank (1-364)</label><input type="number" id="kp-pace" placeholder="e.g. 68" min="1" max="364"></div>
+            <div class="field"><label>adj. ORTG rank</label><input type="number" id="kp-ortg" placeholder="e.g. 45" min="1" max="364"></div>
+            <div class="field"><label>strength of schedule rank</label><input type="number" id="kp-sos" placeholder="e.g. 12" min="1" max="364"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>luck rating rank (lower = luckier)</label><input type="number" id="kp-luck" placeholder="e.g. 180" min="1" max="364"></div>
+            <div class="field"><label>continuity % (roster returned)</label><input type="number" id="kp-cont" placeholder="e.g. 65" min="0" max="100" step="1"></div>
+          </div>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);line-height:1.7">
+            UCLA baseline: pace ~240-260 rank (deliberate halfcourt) · use for competition context badge and Stage 4 sustainability question
+          </div>
+        </div>
+        <button class="btn btn-accent btn-full" id="next-btn" style="margin-top:2px">calculate baseline &amp; begin evaluation →</button>
+      </div>
+
+      <div id="step-film" style="display:none">
+        <div class="steps-row"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:6px;letter-spacing:.06em">film evaluation</span></div>
+        <div class="pregradecard" id="pregradecard">
+          <div class="pg-row">
+            <div><div class="pg-name" id="pg-name"></div><div class="pg-meta" id="pg-meta"></div><div id="pg-badge"></div></div>
+            <div class="pg-score-wrap"><div class="pg-score" id="pg-score"></div><div class="pg-score-lbl">DATA PRE-GRADE</div></div>
+          </div>
+          <div class="mini-bars" id="pg-bars"></div>
+        </div>
+        <div class="stage-pips" id="stage-pips"></div>
+        <div class="card">
+          <div class="stage-lbl" id="stage-lbl">stage 1 of 6</div>
+          <div class="chat-wrap" id="chat-messages"></div>
+          <div class="chat-input-row">
+            <textarea id="chat-input" placeholder="answer here..."></textarea>
+            <button class="btn btn-accent" id="send-btn">send</button>
+          </div>
+          <div class="chat-hint">enter to send · shift+enter for new line</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="back-btn">← back</button>
+          <button class="btn btn-accent" id="gen-btn" style="display:none">unlock evaluation →</button>
+        </div>
+      </div>
+
+      <div id="step-result" style="display:none">
+        <div class="steps-row"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:6px;letter-spacing:.06em">final evaluation</span></div>
+        <div class="blur-wrap" id="result-wrap">
+          <div class="blur-mask" id="blur-mask"><span class="spinner"></span><p>generating evaluation...</p></div>
+          <div class="card"><div id="result-content"></div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          <button class="btn" id="reset-btn">evaluate another</button>
+          <button class="btn btn-accent" id="save-btn">add to board +</button>
+          <button class="export-btn" id="export-btn">export transcript</button>
+        </div>
+        <div id="transcript-box" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);white-space:pre-wrap;max-height:200px;overflow-y:auto;line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <!-- ── UCLA ROSTER MODULE ── -->
+    <div class="module" id="module-ucla">
+      <div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;">UCLA Bruins 2025-26</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">Big Ten · Mick Cronin · 6 players evaluated</div>
+        </div>
+      </div>
+      <div id="ucla-roster-container"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── Constants ──
+const ARCHETYPES={guard:['pure PG','scoring guard','defensive-minded guard','combo guard — balanced','combo guard — scoring lean','combo guard — playmaking lean','off-ball shooter','backup PG'],wing:['3&D wing','two-way wing','scoring wing','stretch forward','switchable forward','high-motor role wing','versatile connector wing'],big:['stretch 4','PF — post scorer','PF — motor/rebounder','small ball 5','traditional center','rim runner / lob threat','pick-and-pop 4/5','defensive anchor']};
+const CONF_LABELS={1:'low-major',2:'mid-major',3:'high mid-major',4:'Power 4',5:'intl elite'};
+const RANK_LABELS={'5star':'5-star','4star':'4-star','3star':'3-star','unranked':'unranked','portal-high':'high portal','portal-mid':'mid portal','portal-low':'low portal'};
+const ROLE_LABELS={primary:'primary option',second:'elite 2nd option',third:'3rd option',rotation:'rotation piece',specialist:'specialist'};
+const TIERS={
+  'Tier 1':{label:'Franchise Cornerstone / Elite Max Impact',cls:'t1'},
+  'Tier 2':{label:'High-Impact Starter / All-Conference Caliber',cls:'t2'},
+  'Tier 3':{label:'Solid Starter / Winning System Piece',cls:'t3'},
+  'Tier 4':{label:'Rotation Contributor / Premium Bench Spark Plug',cls:'t4'},
+  'Tier 5':{label:'Valuable Long-Term Depth / Culture Piece',cls:'t5'},
+  'Tier 6':{label:'Situational Specialist / Non-Factor / Low-Minute Project',cls:'t6'}
+};
+const NIL_TIERS={'Tier 1':650000,'Tier 2':350000,'Tier 3':200000,'Tier 4':100000,'Tier 5':40000,'Tier 6':15000};
+const STAGE_NAMES=['signature strength','developmental friction','development roadmap','contextual translation','schematic fit','definitive system role'];
+const OFF_TAGS=['Pure PG','Scoring Guard','Combo Guard','Off-Ball Shooter','Catch-and-Stampede Runner','Short-Roll Finisher','Dunker Spot Threat','Floor Spacer','Pick & Roll Initiator','Face-Up Scorer','Secondary Creator','Transition Weapon'];
+const DEF_TAGS=['Elite Perimeter Lockdown','Switchable 1-4','Switchable 2-3','Switchable 3-5','Good On-Ball Defender','Serviceable Defender','Blitz-and-Recover Big','Rim Protector','Secondary Rim Protector','Defensive Disruptor','Perimeter Enforcer'];
+const INT_TAGS=['High Motor','Physical Enforcer','Glass Crasher','Lob Threat','Caveman Brain Role Discipline','High-Volume Hustle Engine','Continuous Competitive Energy','Low Processing Role Player','Sneaky Athletic'];
+
+// UCLA Roster data
+const UCLA_ROSTER=[
+  {name:'Trent Perry',school:'UCLA',cls:'So',pos:'guard',arch:'combo guard — playmaking lean',height:"6'4\"",wt:175,overall:83,grade:'A-',tier:'Tier 2',preGrade:76,shooting:81,playmaking:72,defense:74,rebounding:55,tags:['Secondary Ball Handler','Off-Ball Shooter','Pick & Roll Initiator','Serviceable Defender (1-2)'],nba_role:'Backup combo guard — scores efficiently in PnR, hits threes, makes simple reads',college_projection:'Power 4 lead guard — 1A in a balanced system built around him',comp_floor:'Tyus Jones',comp_likely:'Trent Perry is his own comp',comp_ceiling:'Jrue Holiday lite',green_flags:['improving 3P% (34→39%)','Big Ten BPM +5.6 as sophomore','elite FT% 85.8%'],red_flags:['AST/TOV tighter than ideal','ORTG drops vs top-50 opponents'],summary:'Perry is the engine UCLA runs through. The 39.2% from three on real volume and 5.6 BPM in the Big Ten as a sophomore are the foundation. Ceiling tied to PnR development and mid-range creation.',context:'UCLA primary ball handler. Perry/Petty backcourt. Elite second option — 1A in a balanced system.'},
+  {name:'Jaylen Petty',school:'UCLA',cls:'So',pos:'guard',arch:'combo guard — scoring lean',height:"6'1\"",wt:168,overall:80,grade:'B+',tier:'Tier 3',preGrade:79,shooting:89,playmaking:75,defense:61,rebounding:68,tags:['Off-Ball Shooter','Catch & Shoot Specialist','Jet Cut Weapon','Catch-and-Stampede Runner'],nba_role:'Off-bench scoring guard — catch and shoot, attacks closeouts, jet cut actions',college_projection:'Big Ten secondary scoring guard — elite spot-up threat next to Perry',comp_floor:'Late rotation scoring guard',comp_likely:'Explosive twitchy scoring combo guard',comp_ceiling:"De'Aaron Fox / IT blend if midrange develops",green_flags:['97th% iso PPP','84th% spot-up efficiency','12.3% TOV rate'],red_flags:['168 lbs limits screen navigation','21st% P&R defense','needs STL% to reach 2.5%+'],summary:'Lethal play-finisher and off-ball weapon who fits perfectly next to Perry in jet cut actions. Hard hedge scheme masks defensive limitations. If midrange develops he becomes a real problem.',context:'Transfer Texas Tech. Hard hedge bigs protect him on defense. STL% target 2.5%+. Catch and shoot or catch and stampede.'},
+  {name:'Xavier Booker',school:'UCLA',cls:'Jr',pos:'big',arch:'pick-and-pop 4/5',height:"6'11\"",wt:245,overall:78,grade:'B+',tier:'Tier 3',preGrade:76,shooting:91,playmaking:52,defense:68,rebounding:72,tags:["Pick & Pop Assassin","Floor Spacer","7'4\" Wingspan Wall","Straight-Line Closeout Attacker"],nba_role:'High-gravity pick-and-pop weapon — elite floor spacing, secondary rim threat, defensively limited in space',college_projection:'Starting stretch 5 — offensive gravity engine, 9-11 PPG in defined role',comp_floor:'Needs enforcers or becomes liability',comp_likely:'Sam Hauser type stretch big',comp_ceiling:'Brook Lopez stretch version',green_flags:['43.3% from 3 on volume','96th% P&R roll man PPP','7\'4" wingspan deterrent','gym routine locked in'],red_flags:['6th% defending spot-ups','49.8% MIN% — minutes capped for reason','no isolation, ghost screens only'],summary:'HE is the floor spacing. Perry and Petty attack downhill off his gravity. Ghost screens and closeout attacks only. Surrounded by high-energy enforcers to mask defensive limitations.',context:'HE is the spacing — everyone attacks off his gravity. Ghost screens and closeout attacks only. No top-of-key isolation. High-energy defenders around him mask perimeter limitations.'},
+  {name:'Eric Dailey Jr.',school:'UCLA',cls:'Sr',pos:'wing',arch:'two-way wing',height:"6'8\"",wt:230,overall:79,grade:'B+',tier:'Tier 3',preGrade:81,shooting:68,playmaking:65,defense:82,rebounding:84,tags:['Versatile Defender (1-4)','Transition Finisher','High Motor Rebounder','Matchup-Dependent Scorer'],nba_role:'College ceiling — physical versatility and motor are real, creation limitations cap NBA projection',college_projection:'Starting forward — senior glue guy, anchors Big Ten starting lineup physicality',comp_floor:'Torrey Craig',comp_likely:'Kenrich Williams',comp_ceiling:'Dorian Finney-Smith',green_flags:['90th% transition finisher','66.7% at rim on volume','18.7% DRB%'],red_flags:['31.6% from 3 — mechanics being corrected','matchup-dependent — weekly game plan required','can disrupt offensive flow if hunting shots'],summary:'What a Cronin system needs — physical, passionate, versatile, unselfish. Three-point shot is the only variable separating solid starting forward from a real two-way weapon. Shot mechanics being actively corrected.',context:'Senior starter. Cronin loyalty means he starts. Matchup-dependent — needs specific weekly focus from staff. Jovic could be better option at 4 but will not happen.'},
+  {name:'Filip Jovic',school:'UCLA',cls:'So',pos:'big',arch:'rim runner / lob threat',height:"6'8\"",wt:225,overall:78,grade:'B+',tier:'Tier 3',preGrade:72,shooting:10,playmaking:68,defense:72,rebounding:78,tags:['Short Roll Finisher','2-Man Game Weapon','Blitz-and-Recover Big','Sneaky Athletic Dunker','Non-Shooter (spacing rule)'],nba_role:'College ceiling — physical interior finisher with real upside, non-shooting limits NBA fit',college_projection:'Undersized 5 or physical 4 — change-of-pace weapon when Booker sits',comp_floor:'Low-major center who never sticks at high level',comp_likely:'Isaiah Hartenstein year 1',comp_ceiling:'Mason Plumlee type',green_flags:['93.8% dunk rate','66.9% rim finishing','NIT explosion (12/18/13/12 in 4 games)','lateral mobility for blitz scheme'],red_flags:['zero perimeter shooting (0-3 from 3)','17th% defensive Synergy','undersized for Big Ten 5'],summary:'The physical enforcer the frontcourt needs. JOVIC IS THE ONLY NON-SHOOTER ALLOWED ON FLOOR — all other 4 must be 35%+. Catches in open space, runs a tight 2-man game, finishes with real bounce.',context:'ONLY non-shooter allowed on floor. Everyone else must be 35%+. Undersized 5 with Dailey as 4, or physical 4 with Booker. Do NOT play Booker, Dailey, Jovic together — kills spacing.'},
+  {name:'Brandon Williams',school:'UCLA',cls:'So',pos:'wing',arch:'high-motor role wing',height:"6'7\"",wt:230,overall:74,grade:'B',tier:'Tier 4',preGrade:72,shooting:68,playmaking:66,defense:86,rebounding:81,tags:['Multipositional Defender 1-5','Low-Usage Glue Piece','Glass Crasher','Physical Enforcer','Catch and Stampede Runner'],nba_role:'College ceiling — physical versatility and motor are real, offensive limitations cap projection',college_projection:'Rotation forward — high-utility plug-and-play piece at 3/4/5',green_flags:['guards 1-5 credibly','62.2% at rim finishing','low-usage off-ball — never kills flow','Bilodeau shooting blueprint in progress'],red_flags:['24% from three on low volume','processing lag in half-court sets','can hesitate on catch and shoot looks'],summary:'Williams is the low-usage glue piece this roster needs. He bangs, rebounds, screens, and defends every position without hunting shots or disrupting offensive flow. Differs from Dailey in that he is purely off-ball. Standstill jumper in development via the Bilodeau shooting blueprint.',context:'Can play 3/4/5. Low-usage off-ball only. Shoot if open, stampede if defense closes out. Do not ask him to create. Screener and finisher.'},
+  {name:'Eric Freeny',school:'UCLA',cls:'So',pos:'guard',arch:'defensive-minded guard',height:"6'4\"",wt:215,overall:72,grade:'B',tier:'Tier 4',preGrade:58,shooting:75,playmaking:38,defense:83,rebounding:66,tags:['Elite Perimeter Lockdown','Catch-and-Stampede Runner','Physical Enforcer','High Motor','Low Processing Role Player'],nba_role:'College ceiling — effort and physicality are real, creation limitations cap projection',college_projection:'7th man energy piece — Big Ten defensive spark plug',green_flags:['94th% P&R defense','69th% spot-up defense','jumper mechanics improved past 5 months'],red_flags:['needs exact simple instructions','high foul tendency','38 playmaking grade'],summary:'Exactly what a contending roster needs as a 7th man. Catch and shoot or catch and stampede. Short leash. Reward effort, correct foul, keep instructions simple. Good year is staying out of foul trouble and changing game energy.',context:'Redshirt freshman. Earned trust through practice dominance. Short leash, reward effort, simple instructions. Role: disrupt opposing guard, physical presence, off-ball shooter.'},
+  {name:'Azavier Robinson',school:'UCLA',cls:'Fr',pos:'guard',arch:'high-motor bench spark',height:'6\'2"',wt:195,overall:77,grade:'B',tier:'Tier 4',preGrade:70,shooting:73,playmaking:72,defense:90,rebounding:65,tags:['Elite Perimeter Lockdown','Defensive Disruptor','High-Volume Hustle Engine','Catch-and-Stampede Runner','High Motor'],nba_role:'College ceiling — defensive tools and motor are real, half-court creation still developing',college_projection:'High-usage bench spark — transition initiator, defensive disruptor, offensive simplicity required',green_flags:['elite passing lane hunter','transition initiator off deflections','motor changes game energy immediately'],red_flags:['freshman pacing lapses in half-court sets','foul rate in P&R actions','ball-screen reads raw'],summary:'Robinson is a powerfully built hyper-competitive guard who brings unique defensive disruption and transition gravity off the bench. Half-court poise still maturing but the chaos defense and downhill juice are immediately deployable. Sebastian Mack archetype — shiftier and higher vision.',context:'Catch and shoot or catch and stampede only. Simplify offensive reads. Pair with Perry or Freeny as floor stabilizer. Learn by osmosis behind veterans. Short leash until pacing lapses clean up.'}
+];
+
+// ── Module switching ──
+const MODULE_TITLES={portal:['Transfer Portal Hub','Power 4 & High Mid-Major targets'],hs:['High School Recruiting','EYBL · 3SSB · NextGen · International'],scheme:['Internal Scheme & Synergy Panel','UCLA Bruins 2025-26 · spacing rules & lineup simulator'],draft:['NBA Draft Personnel','Reference board · long-range monitoring'],eval:['New Evaluation','Stats → Pre-grade → 6-stage film debrief → Final card'],ucla:['UCLA Roster','2025-26 season evaluations']};
+
+function switchModule(m,el){
+  document.querySelectorAll('.module').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('module-'+m).classList.add('active');
+  if(el) el.classList.add('active');
+  const [title,sub]=MODULE_TITLES[m]||['',''];
+  document.getElementById('topbar-title').textContent=title;
+  document.getElementById('topbar-sub').textContent='· '+sub;
+  if(m==='ucla') renderUCLARoster();
+  if(m==='scheme'){renderLineupPicker();populateCompDropdowns();}
+  if(m==='draft') renderDraftBoard();
+}
+
+function setMode(m,btn){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-indicator').textContent=m==='college'?'COLLEGE MODE':'HS / INTL MODE';
+}
+
+// ── Archetype dropdown ──
+document.getElementById('p-pos').addEventListener('change',function(){
+  const sel=document.getElementById('p-arch');
+  sel.innerHTML='<option value="">select role...</option>';
+  (ARCHETYPES[this.value]||[]).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
+});
+
+// ── Helpers ──
+function gv(id){return document.getElementById(id).value.trim();}
+function gn(id){return parseFloat(document.getElementById(id).value)||0;}
+function getKey(){return document.getElementById('api-key').value.trim();}
+function getTierClass(t){return TIERS[t]?.cls||'t6';}
+
+// ── Pre-grade calc ──
+function calcPG(s){
+  const cm={1:.82,2:.9,3:1,4:1.08,5:1.05}[s.conf]||1;
+  const cl=(v,lo,hi)=>Math.max(0,Math.min(1,(v-lo)/(hi-lo)));
+  let sh,pl,df,rb;
+  if(s.pos==='guard'){
+    sh=(cl(s.ts,52,70)*.25+cl(s.p3,30,44)*.25+cl(s.ft,68,90)*.15+cl(s.f2,36,52)*.15+cl(s.ortg,102,132)*.2)*100;
+    pl=(cl(s.ast,8,30)*.35+cl(20-s.tov,4,18)*.3+cl(s.ftr,20,75)*.15+cl(s.bpm,-2,8)*.2)*100+(s.usg>25&&s.ast<18?-8:0);
+    df=(cl(s.stl,1,3.5)*.4+cl(s.dbpm,-2,4)*.35+cl(s.min,30,95)*.15+cl(6-s.foul,1,4)*.1)*100;
+    rb=(cl(s.drb,6,18)*.6+cl(s.orb,1,6)*.4)*100;
+    return{overall:Math.round(Math.min(98,Math.max(30,(sh*.38+pl*.32+df*.2+rb*.1)*cm))),sh:Math.round(sh),pl:Math.round(pl),df:Math.round(df),rb:Math.round(rb)};
+  }else if(s.pos==='wing'){
+    sh=(cl(s.ts,50,68)*.2+cl(s.p3,30,44)*.25+cl(s.ft,65,88)*.15+cl(s.c2,52,70)*.15+cl(s.ortg,102,130)*.25)*100;
+    pl=(cl(s.ast,6,22)*.3+cl(20-s.tov,4,16)*.3+cl(s.ftr,20,65)*.2+cl(s.bpm,-2,7)*.2)*100;
+    df=(cl(s.stl,1,3.5)*.25+cl(s.blk,.5,4)*.25+cl(s.dbpm,-2,4)*.3+cl(6-s.foul,1,4)*.2)*100;
+    rb=(cl(s.drb,10,26)*.45+cl(s.orb,2,10)*.35+cl(s.blk,.5,4)*.2)*100;
+    return{overall:Math.round(Math.min(98,Math.max(30,(sh*.3+pl*.22+df*.28+rb*.2)*cm))),sh:Math.round(sh),pl:Math.round(pl),df:Math.round(df),rb:Math.round(rb)};
+  }else{
+    sh=(cl(s.ts,48,66)*.2+cl(s.p3,25,42)*.2+cl(s.ft,58,84)*.2+cl(s.c2,54,74)*.25+cl(s.ortg,100,128)*.15)*100;
+    pl=(cl(s.ast,4,18)*.3+cl(20-s.tov,4,16)*.35+cl(s.ftr,25,80)*.2+cl(s.ortg,100,128)*.15)*100;
+    df=(cl(s.blk,1.5,9)*.35+cl(s.drb,14,32)*.3+cl(s.stl,.5,2.5)*.2+cl(6-s.foul,0,3.5)*.15)*100;
+    rb=(cl(s.drb,14,34)*.45+cl(s.orb,4,16)*.4+cl(s.blk,1.5,9)*.15)*100;
+    return{overall:Math.round(Math.min(98,Math.max(30,(sh*.2+pl*.2+df*.32+rb*.28)*cm))),sh:Math.round(sh),pl:Math.round(pl),df:Math.round(df),rb:Math.round(rb)};
+  }
+}
+
+function getStats(){
+  return{name:gv('p-name')||'Player',school:gv('p-school'),age:gv('p-age'),height:gv('p-ht'),cls:gv('p-cls'),pos:gv('p-pos'),arch:gv('p-arch'),conf:parseInt(gv('p-conf'))||4,teamRole:gv('p-team-role')||'second',rank:gv('p-rank')||'3star',board:gv('p-board')||'portal',ts:gn('s-ts'),p3:gn('s-3p'),r3:gn('s-3r'),ft:gn('s-ft'),c2:gn('s-c2'),f2:gn('s-f2'),usg:gn('s-usg'),ortg:gn('s-ortg'),ast:gn('s-ast'),tov:gn('s-tov'),bpm:gn('s-bpm'),dbpm:gn('s-dbpm'),stl:gn('s-stl'),blk:gn('s-blk'),ftr:gn('s-ftr'),foul:gn('s-foul'),orb:gn('s-orb'),drb:gn('s-drb'),min:gn('s-min'),prpg:gn('s-prpg'),wt:gn('m-wt'),wingspan:gv('m-ws'),reach:gv('m-sr'),ath:gn('m-ath'),nilAsk:gn('nil-ask'),kpPace:gn('kp-pace'),kpOrtg:gn('kp-ortg'),kpSos:gn('kp-sos'),kpLuck:gn('kp-luck'),kpCont:gn('kp-cont')};
+}
+
+function statLine(s){
+  const meas=[s.height,s.wt?s.wt+'lbs':'',s.wingspan?'ws '+s.wingspan:'',s.ath?'ath '+s.ath+'/10':''].filter(Boolean).join(', ');
+  const kp=[];
+  if(s.kpPace) kp.push(`team pace rank #${s.kpPace} (UCLA baseline ~250 — ${s.kpPace<150?'faster than UCLA system':'similar or slower than UCLA system'})`);
+  if(s.kpSos) kp.push(`SOS rank #${s.kpSos} (${s.kpSos<=50?'elite competition':s.kpSos<=150?'solid competition':'weak schedule'})`);
+  if(s.kpLuck) kp.push(`luck rank #${s.kpLuck} (${s.kpLuck<=100?'team overperformed record — check garbage time exposure':'results roughly expected'})`);
+  if(s.kpCont) kp.push(`${s.kpCont}% roster continuity (${s.kpCont>=70?'high structure around him':'low continuity — produced in chaos, green flag'})`);
+  if(s.kpOrtg) kp.push(`team adj. ORTG rank #${s.kpOrtg}`);
+  return `${s.name}, ${s.cls} at ${s.school} (${CONF_LABELS[s.conf]||'Power 4'}), ${s.pos}, role: ${s.arch}, projected role: ${ROLE_LABELS[s.teamRole]||''}, rank: ${RANK_LABELS[s.rank]||''}. Measurables: ${meas}. Stats: TS% ${s.ts}, 3P% ${s.p3} on ${s.r3}/100, FT% ${s.ft}, close2% ${s.c2}, far2% ${s.f2}, USG% ${s.usg}, ORTG ${s.ortg}, AST% ${s.ast}, TOV% ${s.tov}, BPM ${s.bpm}, DBPM ${s.dbpm}, STL% ${s.stl}, BLK% ${s.blk}, FTR ${s.ftr}, fouls/40 ${s.foul}, ORB% ${s.orb}, DRB% ${s.drb}, MIN% ${s.min}.${kp.length?` KenPom context: ${kp.join('; ')}.`:''}`;
+}
+
+function getKenPomBadge(s){
+  if(!s.kpPace&&!s.kpSos&&!s.kpLuck) return '';
+  const flags=[];
+  const paceFlag=s.kpPace?(s.kpPace<150?{label:'FAST PACE → UCLA ADJUSTMENT',color:'var(--amber)'}:{label:'PACE MATCH',color:'var(--green)'}):null;
+  const sosFlag=s.kpSos?(s.kpSos<=50?{label:'ELITE SOS',color:'var(--green)'}:s.kpSos<=150?{label:'SOLID SOS',color:'var(--blue)'}:{label:'WEAK SOS',color:'var(--red)'}):null;
+  const luckFlag=s.kpLuck?(s.kpLuck<=100?{label:'HIGH LUCK — CHECK GARBAGE TIME',color:'var(--amber)'}:{label:'RESULTS EXPECTED',color:'var(--green)'}):null;
+  const contFlag=s.kpCont?(s.kpCont<50?{label:'LOW CONTINUITY — CHAOS GREEN FLAG',color:'var(--green)'}:{label:'HIGH CONTINUITY',color:'var(--blue)'}):null;
+  [paceFlag,sosFlag,luckFlag,contFlag].filter(Boolean).forEach(f=>{
+    flags.push(`<span style="display:inline-block;padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;font-weight:600;color:${f.color};border:1px solid ${f.color};opacity:.85;margin:2px">${f.label}</span>`);
+  });
+  return flags.length?`<div style="margin-bottom:10px"><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:5px">KENPOM COMPETITION CONTEXT</div><div style="display:flex;flex-wrap:wrap;gap:3px">${flags.join('')}</div></div>`:'';
+}
+
+function getRankExp(r){return{'5star':85,'4star':75,'3star':62,'unranked':48,'portal-high':78,'portal-mid':63,'portal-low':50}[r]||60;}
+
+function renderPreGrade(s,pg){
+  document.getElementById('pg-name').textContent=s.name;
+  document.getElementById('pg-meta').textContent=s.school+' · '+s.cls+' · '+(CONF_LABELS[s.conf]||'Power 4')+' · '+s.arch;
+  const c=pg.overall>=82?'var(--green)':pg.overall>=70?'var(--blue)':pg.overall>=58?'var(--amber)':'var(--red)';
+  document.getElementById('pg-score').textContent=pg.overall;
+  document.getElementById('pg-score').style.color=c;
+  const exp=getRankExp(s.rank),diff=pg.overall-exp;
+  const b=document.getElementById('pg-badge');
+  b.innerHTML=diff>=8?`<span class="badge badge-up">↑ outperforming ${RANK_LABELS[s.rank]} +${diff}</span>`:diff<=-8?`<span class="badge badge-down">↓ underperforming ${RANK_LABELS[s.rank]} ${diff}</span>`:`<span class="badge badge-neutral">≈ tracking ${RANK_LABELS[s.rank]} expectations</span>`;
+  document.getElementById('pg-bars').innerHTML=[['shooting',pg.sh,'#2ecc71'],['playmaking',pg.pl,'#3498db'],['defense',pg.df,'#e74c3c'],['rebounding',pg.rb,'#f39c12']].map(([n,v,c])=>`<div><div class="mini-bar-row"><span>${n}</span><span>${v}</span></div><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${v}%;background:${c}"></div></div></div>`).join('');
+}
+
+function buildPips(q){document.getElementById('stage-pips').innerHTML=Array.from({length:6},(_,i)=>`<div class="pip ${i<q?'done':i===q?'active':''}"></div>`).join('');}
+
+// ── Eval flow ──
+let PD={},PG={},CH=[],QN=0,lastEval=null;
+const maxQ=6;
+
+document.getElementById('next-btn').addEventListener('click',function(){
+  const err=document.getElementById('form-err');
+  const key=getKey(),pos=gv('p-pos'),arch=gv('p-arch');
+  if(!key){err.textContent='enter your API key in the sidebar';err.style.display='block';return;}
+  if(!pos){err.textContent='select a position group';err.style.display='block';return;}
+  if(!arch||arch==='select pos first'||arch==='select role...'){err.textContent='select a college role';err.style.display='block';return;}
+  err.style.display='none';
+  PD=getStats();
+  sessionStorage.setItem('hh_pd',JSON.stringify(PD));
+  PG=calcPG(PD);
+  sessionStorage.setItem('hh_pg',JSON.stringify(PG));
+  renderPreGrade(PD,PG);
+  document.getElementById('step-stats').style.display='none';
+  document.getElementById('step-film').style.display='block';
+  CH=[];QN=0;
+  document.getElementById('chat-messages').innerHTML='';
+  document.getElementById('gen-btn').style.display='none';
+  document.getElementById('send-btn').disabled=false;
+  document.getElementById('chat-input').disabled=false;
+  buildPips(0);
+  document.getElementById('stage-lbl').textContent=`stage 1 of 6 — ${STAGE_NAMES[0]}`;
+  askQ();
+});
+
+document.getElementById('back-btn').addEventListener('click',()=>{document.getElementById('step-film').style.display='none';document.getElementById('step-stats').style.display='block';});
+document.getElementById('send-btn').addEventListener('click',sendAns);
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAns();}});
+document.getElementById('gen-btn').addEventListener('click',genEval);
+document.getElementById('reset-btn').addEventListener('click',()=>{lastEval=null;document.getElementById('step-result').style.display='none';document.getElementById('step-stats').style.display='block';document.getElementById('gen-btn').disabled=false;document.getElementById('blur-mask').style.display='flex';});
+document.getElementById('save-btn').addEventListener('click',saveEval);
+document.getElementById('export-btn').addEventListener('click',()=>{const t=document.getElementById('transcript-box');t.style.display=t.style.display==='none'?'block':'none';});
+
+function buildQSys(s,pg,stage,prev){
+  const flags=[];
+  if(s.usg>24&&s.ast<18)flags.push(`high USG ${s.usg}% but low AST ${s.ast}%`);
+  if(s.tov>16)flags.push(`elevated TOV% ${s.tov}`);
+  if(s.p3>36&&s.r3<4)flags.push(`shoots ${s.p3}% from 3 but only ${s.r3} attempts/100`);
+  if(s.c2<52&&s.pos!=='big')flags.push(`close-2% ${s.c2} is low`);
+  if(s.dbpm<0)flags.push(`negative DBPM ${s.dbpm}`);
+  if(s.foul>4.5)flags.push(`high foul rate ${s.foul}/40`);
+  const instr=[
+    `Ask about his SIGNATURE STRENGTH. Reference his best Synergy percentile or strongest stat. Ask: who on our current roster does his film most closely resemble, and what is his designated job on the floor — and how does that specific tool bend a defense?`,
+    `Based on what the coach said about his strengths, ask about the DEVELOPMENTAL FRICTION POINT. Reference a specific weak stat (${flags[0]||'find the weakest area'}). Ask what physical or mechanical limit causes him to struggle when forced to make a play late in the clock.`,
+    `Chain off the flaw they identified. Ask about the DEVELOPMENT ROADMAP — what is the exact player-development plan to fix that specific flaw, or does his role need to change entirely?`,
+    `Ask about CONTEXTUAL SUSTAINABILITY. Is this performance leap fully sustainable compared to his original rank (${RANK_LABELS[s.rank]||''}), or is competition context inflating the numbers? His pre-grade came in at ${pg.overall} OVR.`,
+    `Chain off the limitations from Q2/Q3. Ask about LINEUP PROTECTION — which specific roster assets must surround him to hide his flaws and maximize his tools?`,
+    `Final question — lock in DEFINITIVE SYSTEM ROLE. Given everything: strengths, flaws, development plan, lineup context — what is his day-one rotation role in our system?`
+  ];
+  return `You are an elite basketball peer helping coach Colin evaluate ${s.name}. You are on stage ${stage+1} of 6: "${STAGE_NAMES[stage]}".
+Player: ${statLine(s)}
+Pre-grade: ${pg.overall} OVR (shoot ${pg.sh}, play ${pg.pl}, def ${pg.df}, reb ${pg.rb})
+${prev.length>0?'Previous answers: '+prev.slice(-3).join(' | '):''}
+Task: ${instr[stage]}
+Rules: ONE question only. Weave in specific stats and previous answers. Direct, blunt, film-room tone — like a sharp peer at 2am. No bullet points. No em dashes. Just the question.`;
+}
+
+async function askQ(){
+  const prev=CH.filter(m=>m.role==='user'&&!m.content.startsWith('Ask stage')).map(m=>m.content);
+  const sys=buildQSys(PD,PG,QN,prev);
+  const msg=`Ask stage ${QN+1} question for ${PD.name}.`;
+  if(QN===0)CH=[{role:'user',content:msg}];
+  else CH.push({role:'user',content:msg});
+  const el=addMsg('','ai',true);
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:sys,messages:CH.slice(-10)})});
+    const d=await r.json();
+    const text=d.content?.[0]?.text||'Could not generate question.';
+    el.textContent=text;
+    CH.push({role:'assistant',content:text});
+    document.getElementById('chat-messages').scrollTop=99999;
+  }catch(e){el.textContent='API error: '+e.message;}
+}
+
+async function sendAns(){
+  const inp=document.getElementById('chat-input');
+  const ans=inp.value.trim();
+  if(!ans)return;
+  inp.value='';
+  addMsg(ans,'user');
+  CH.push({role:'user',content:ans});
+  QN++;buildPips(QN);
+  if(QN>=maxQ){
+    document.getElementById('send-btn').disabled=true;
+    document.getElementById('chat-input').disabled=true;
+    document.getElementById('stage-lbl').textContent='6 stages complete — ready to unlock';
+    document.getElementById('gen-btn').style.display='inline-block';
+    return;
+  }
+  document.getElementById('stage-lbl').textContent=`stage ${QN+1} of 6 — ${STAGE_NAMES[QN]}`;
+  await askQ();
+}
+
+async function genEval(){
+  document.getElementById('gen-btn').disabled=true;
+  document.getElementById('step-film').style.display='none';
+  document.getElementById('step-result').style.display='block';
+  document.getElementById('blur-mask').style.display='flex';
+  document.getElementById('result-content').innerHTML='';
+  if(!PD?.name){const s=sessionStorage.getItem('hh_pd');if(s)PD=JSON.parse(s);}
+  if(!PG?.overall){const s=sessionStorage.getItem('hh_pg');if(s)PG=JSON.parse(s);}
+  const s=PD;
+  const filmAnswers=CH.filter(m=>m.role==='user'&&!m.content.startsWith('Ask stage')).map(m=>m.content);
+  const transcript=STAGE_NAMES.map((name,i)=>{const q=[...CH.filter(m=>m.role==='assistant')][i]||{content:''};const a=filmAnswers[i]||'';return `[Stage ${i+1}: ${name}]\nQ: ${q.content}\nA: ${a}`;}).join('\n\n');
+  document.getElementById('transcript-box').textContent=transcript;
+  const nilBase=NIL_TIERS;
+  const evalSys=`You are generating a final player evaluation for Colin, UCLA Men's Basketball scout. Framework: defensive versatility critical, usage-conditional efficiency matters (high USG guards need strong AST% AND shooting; low USG must shoot threes and/or defend multiple spots), competition context affects stat reading, role clarity and motor major factors, potential can outweigh current stats.
+
+TIER SYSTEM — use exactly one:
+Tier 1 — Franchise Cornerstone / Elite Max Impact
+Tier 2 — High-Impact Starter / All-Conference Caliber
+Tier 3 — Solid Starter / Winning System Piece
+Tier 4 — Rotation Contributor / Premium Bench Spark Plug
+Tier 5 — Valuable Long-Term Depth / Culture Piece
+Tier 6 — Situational Specialist / Non-Factor / Low-Minute Project
+
+POSITION TAGS — use 3-5 from these exact categories:
+Offensive: ${OFF_TAGS.join(', ')}
+Defensive: ${DEF_TAGS.join(', ')}
+Intangibles: ${INT_TAGS.join(', ')}
+
+NBA COMP RANGE — 3 comps from 2019-2026 NBA drafts. For each: PlayerName — specific NBA role — one sentence why. No lazy comps. Use: Colin Murray-Boyles, Isaiah Hartenstein, Alperen Sengun, Evan Mobley, Chet Holmgren, Walker Kessler, Jaden McDaniels, Jaren Jackson Jr, Tyus Jones, Kenrich Williams, Dorian Finney-Smith, Talen Horton-Tucker, etc. Match profile precisely.
+
+nba_role: SPECIFIC — describe what he does, where he scores, how he defends.
+college_projection: one tight line only.
+summary: 2-3 sentences MAX. Punchy. No em dashes. No bullets.
+
+CRITICAL: Pre-grade is ${PG.overall} OVR. Blend with film. Grade relative to projected role (${ROLE_LABELS[s.teamRole]||'second option'}).
+
+Return ONLY valid JSON no markdown:
+{"overall":<int>,"grade":<letter>,"tier":<tier string>,"tier_label":<exact label>,"college_projection":<one line>,"college_role":<string>,"nba_role":<specific>,"position_tags":[<3-5 strings>],"shooting":<int>,"playmaking":<int>,"defense":<int>,"rebounding":<int>,"green_flags":[<max 3>],"red_flags":[<max 3>],"summary":<2-3 sentences>}`;
+  const evalMsg=`${statLine(s)}\nPre-grade: ${PG.overall}.\n6-stage transcript:\n${transcript}\nNIL asking price: $${s.nilAsk||0}\nGenerate evaluation.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:evalSys,messages:[{role:'user',content:evalMsg}]})});
+    const d=await r.json();
+    let raw=(d.content?.[0]?.text||'{}').replace(/```json|```/g,'').trim();
+    const ev=JSON.parse(raw);
+    lastEval={...ev,name:s.name,school:s.school,arch:s.arch,cls:s.cls,pos:s.pos,preGrade:PG.overall,nilAsk:s.nilAsk,board:s.board,kpPace:s.kpPace,kpSos:s.kpSos,kpLuck:s.kpLuck,kpCont:s.kpCont,kpOrtg:s.kpOrtg};
+    renderResult(ev,s);
+    document.getElementById('blur-mask').style.display='none';
+  }catch(err){
+    document.getElementById('blur-mask').innerHTML=`<p style="color:var(--red);font-family:'DM Mono',monospace;font-size:11px">Error: ${err.message}</p><button class="btn btn-sm" style="margin-top:8px" onclick="document.getElementById('step-result').style.display='none';document.getElementById('step-film').style.display='block';document.getElementById('gen-btn').disabled=false;">go back</button>`;
+  }
+}
+
+function renderResult(ev,s){
+  function GL(v){return v>=90?'A+':v>=87?'A':v>=84?'A-':v>=81?'B+':v>=78?'B':v>=75?'B-':v>=72?'C+':v>=69?'C':v>=66?'C-':v>=63?'D+':v>=60?'D':'D-';}
+  function GC(v){return v>=84?'#4ade80':v>=75?'#60a5fa':v>=63?'#fb923c':'#f87171';}
+  function BC(v){return v>=84?'#4ade80':v>=72?'#60a5fa':v>=60?'#fb923c':'#f87171';}
+  function tagStyle(t){
+    if(/lockdown|disrupt|enforcer|perimeter|switchable|defender|blitz|rim protect/i.test(t))
+      return 'background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.35);color:#93c5fd;';
+    if(/shoot|spacer|scorer|stampede|jet cut|dunker|pop|transition|creator|roll|finisher/i.test(t))
+      return 'background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);color:#86efac;';
+    return 'background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);color:#fdba74;';
+  }
+
+  var cats=[
+    {label:'Shooting',val:ev.shooting},
+    {label:'Defense',val:ev.defense},
+    {label:'Rebounding',val:ev.rebounding},
+    {label:'Playmaking',val:ev.playmaking}
+  ];
+  cats.sort(function(a,b){return b.val-a.val;});
+
+  var nilProjected=NIL_TIERS[ev.tier]||50000;
+  var nilAsk=s.nilAsk||0;
+  var nilSurplus=nilAsk>0?nilProjected-nilAsk:null;
+
+  var gf=(ev.green_flags||[]).map(function(f){return '<span style="display:inline-block;padding:3px 8px;border-radius:3px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);font-size:10px;color:#4ade80;margin:2px">▲ '+f+'</span>';}).join('');
+  var rf=(ev.red_flags||[]).map(function(f){return '<span style="display:inline-block;padding:3px 8px;border-radius:3px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);font-size:10px;color:#f87171;margin:2px">▼ '+f+'</span>';}).join('');
+  var kenpom=getKenPomBadge(s);
+  var tagHtml=(ev.position_tags||[]).map(function(t){return '<span style="display:inline-block;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;margin:2px;'+tagStyle(t)+'">'+t+'</span>';}).join('');
+
+  var barsHtml=cats.map(function(cat){
+    return '<div style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<div style="font-size:11px;color:var(--text2);font-family:\'DM Mono\',monospace">'+cat.label+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<div style="font-size:13px;font-weight:700;color:'+GC(cat.val)+';font-family:\'Barlow Condensed\',sans-serif">'+cat.val+'</div>'
+      +'<div style="font-size:11px;font-weight:800;color:'+GC(cat.val)+';min-width:24px;text-align:right">'+GL(cat.val)+'</div>'
+      +'</div></div>'
+      +'<div style="background:var(--surface2);border-radius:3px;height:7px;overflow:hidden">'
+      +'<div style="height:100%;width:'+cat.val+'%;background:'+BC(cat.val)+';border-radius:3px"></div>'
+      +'</div></div>';
+  }).join('');
+
+  var nilHtml=nilAsk>0?'<div style="margin-bottom:14px;border-top:1px solid var(--border);padding-top:12px"><div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:5px;font-family:\'DM Mono\',monospace">NIL — ASKING PRICE</div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:700;color:var(--text)">$'+nilAsk.toLocaleString()+' asking</div><div style="font-size:11px;color:'+(nilSurplus>=0?'#4ade80':'#f87171')+';margin-top:3px;font-weight:600">'+(nilSurplus>=0?'+ $'+nilSurplus.toLocaleString()+' vs tier baseline':'- $'+Math.abs(nilSurplus).toLocaleString()+' above tier baseline')+'</div><div style="display:inline-block;margin-top:5px;padding:3px 10px;border-radius:4px;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.3);font-size:9px;color:var(--accent);letter-spacing:.06em;font-family:\'DM Mono\',monospace">'+ev.tier+' · '+(ev.tier_label||'')+'</div></div>':'<div style="margin-bottom:14px"><div style="display:inline-block;padding:3px 10px;border-radius:4px;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.3);font-size:9px;color:var(--accent);letter-spacing:.06em;font-family:\'DM Mono\',monospace">'+ev.tier+' · '+(ev.tier_label||'')+'</div></div>';
+
+  document.getElementById('result-content').innerHTML=
+    '<div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--text3);letter-spacing:.12em;margin-bottom:10px">PLAYER CARD</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
+      +'<div style="display:flex;gap:12px;align-items:center">'
+        +'<div style="width:44px;height:44px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--accent);font-family:\'Barlow Condensed\',sans-serif;flex-shrink:0">'+s.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2)+'</div>'
+        +'<div>'
+          +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1">'+s.name+'</div>'
+          +'<div style="font-size:11px;color:var(--text3);margin-top:3px">'+s.school+' · '+(CONF_LABELS[s.conf]||'Power 4')+' · '+(s.pos==='guard'?'Guard':s.pos==='wing'?'Wing':'Big')+' · '+s.cls+(s.height?' · '+s.height:'')+'</div>'
+        +'</div>'
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">OVR · pre: '+PG.overall+'</div>'
+        +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:32px;font-weight:800;color:'+GC(ev.overall)+';line-height:1">'+ev.overall+'</div>'
+        +'<div style="font-size:13px;font-weight:800;color:'+GC(ev.overall)+'">'+GL(ev.overall)+'</div>'
+      +'</div>'
+    +'</div>'
+
+    +nilHtml
+
+    +kenpom
+
+    +'<div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">'
+      +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:12px;font-family:\'DM Mono\',monospace">HOOPSHUB SKILL PROFILE</div>'
+      +barsHtml
+    +'</div>'
+
+    +'<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">'
+      +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:8px;font-family:\'DM Mono\',monospace">ROLE TAGS</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px">'+tagHtml+'</div>'
+    +'</div>'
+
+    +((gf||rf)?'<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">'
+      +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:6px;font-family:\'DM Mono\',monospace">FLAGS</div>'
+      +'<div>'+gf+rf+'</div>'
+    +'</div>':'')
+
+    +'<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+        +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px"><div style="font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:4px;font-family:\'DM Mono\',monospace">COLLEGE PROJECTION</div><div style="font-size:11px;color:var(--text);font-weight:600;line-height:1.5">'+(ev.college_projection||'')+'</div></div>'
+        +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px"><div style="font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:4px;font-family:\'DM Mono\',monospace">NBA ROLE</div><div style="font-size:11px;color:var(--text2);line-height:1.5">'+(ev.nba_role||'N/A')+'</div></div>'
+      +'</div>'
+    +'</div>'
+
+    +'<div style="border-top:1px solid var(--border);padding-top:12px">'
+      +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:6px;font-family:\'DM Mono\',monospace">SCOUTING SUMMARY</div>'
+      +'<div style="font-size:12px;color:var(--text2);line-height:1.75">'+(ev.summary||'')+'</div>'
+    +'</div>'
+
+    +'<div class="comp-card" style="display:none"></div>';
+}
+
+function addMsg(text,type,spinner=false){
+  const wrap=document.getElementById('chat-messages');
+  const el=document.createElement('div');
+  el.className='msg msg-'+type;
+  if(spinner)el.innerHTML='<span class="spinner"></span>';
+  else el.textContent=text;
+  wrap.appendChild(el);
+  wrap.scrollTop=99999;
+  return el;
+}
+
+// ── Save to board ──
+// ── Torvik Auto-Fetch ──
+async function fetchTorvik(){
+  const query=document.getElementById('torvik-search').value.trim();
+  const status=document.getElementById('torvik-status');
+  if(!query){status.textContent='enter a player name first';return;}
+  status.textContent='fetching from barttorvik.com...';
+  try{
+    // Use proxy endpoint when hosted on Vercel, fall back to direct for local
+    const isHosted = window.location.hostname !== 'localhost' && window.location.protocol !== 'file:';
+    const year = 2026;
+    const url = isHosted
+      ? `/api/torvik?kw=${encodeURIComponent(query)}&year=${year}`
+      : `https://barttorvik.com/playerstat.php?link=y&year=${year}&kw=${encodeURIComponent(query)}&start=20251101&end=20260501&json=1`;
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('fetch failed');
+    const data=await res.json();
+    if(!data||!data.length){status.style.color='var(--amber)';status.textContent='no results found — try a different spelling';return;}
+
+    // Torvik returns array of players — take first match
+    const p=data[0];
+    // Torvik columns: [rank, player, team, conf, min%, prpg, bpm, obpm, dbpm, ortg, usg, efg, ts, or, dr, ast, to, blk, stl, ftr, 2p%, 3p_rate, 3p/100, 3p%]
+    // Field indices based on barttorvik format
+    const name=p[1]||'';
+    const team=p[2]||'';
+    const minpct=parseFloat(p[4])||0;
+    const ortg=parseFloat(p[9])||0;
+    const usg=parseFloat(p[10])||0;
+    const efg=parseFloat(p[11])||0;
+    const ts=parseFloat(p[12])||0;
+    const orb=parseFloat(p[13])||0;
+    const drb=parseFloat(p[14])||0;
+    const ast=parseFloat(p[15])||0;
+    const tov=parseFloat(p[16])||0;
+    const blk=parseFloat(p[17])||0;
+    const stl=parseFloat(p[18])||0;
+    const ftr=parseFloat(p[19])||0;
+    const fg2=parseFloat(p[20])||0;
+    const p3rate=parseFloat(p[21])||0;
+    const p3per100=parseFloat(p[22])||0;
+    const p3pct=parseFloat(p[23])||0;
+    const bpm=parseFloat(p[6])||0;
+    const dbpm=parseFloat(p[8])||0;
+
+    // Pre-fill form fields
+    document.getElementById('p-name').value=name;
+    document.getElementById('p-school').value=team;
+    document.getElementById('s-ts').value=ts.toFixed(1);
+    document.getElementById('s-usg').value=usg.toFixed(1);
+    document.getElementById('s-ortg').value=ortg.toFixed(1);
+    document.getElementById('s-ast').value=ast.toFixed(1);
+    document.getElementById('s-tov').value=tov.toFixed(1);
+    document.getElementById('s-bpm').value=bpm.toFixed(1);
+    document.getElementById('s-dbpm').value=dbpm.toFixed(1);
+    document.getElementById('s-stl').value=stl.toFixed(1);
+    document.getElementById('s-blk').value=blk.toFixed(1);
+    document.getElementById('s-ftr').value=ftr.toFixed(1);
+    document.getElementById('s-orb').value=orb.toFixed(1);
+    document.getElementById('s-drb').value=drb.toFixed(1);
+    document.getElementById('s-min').value=minpct.toFixed(1);
+    document.getElementById('s-3p').value=p3pct.toFixed(1);
+    document.getElementById('s-3r').value=p3per100.toFixed(1);
+    document.getElementById('s-c2').value=fg2.toFixed(1);
+    document.getElementById('s-efg')?document.getElementById('s-efg').value=efg.toFixed(1):'';
+
+    status.style.color='var(--green)';
+    status.textContent='✓ stats loaded for '+name+' ('+team+') — confirm position and fill in measurables';
+  }catch(e){
+    status.style.color='var(--red)';
+    status.textContent='fetch failed — barttorvik may not allow cross-origin requests from local files. try hosting the site or using a CORS proxy.';
+    console.error('Torvik fetch error:',e);
+  }
+}
+
+// Allow enter key on torvik search
+document.addEventListener('DOMContentLoaded',function(){
+  var ts=document.getElementById('torvik-search');
+  if(ts)ts.addEventListener('keydown',function(e){if(e.key==='Enter')fetchTorvik();});
+});
+const LS_KEYS={portal:'hoopshub_portal',hs:'hoopshub_hs',draft_user:'hoopshub_draft_user'};
+
+function saveBoards(){
+  try{
+    localStorage.setItem(LS_KEYS.portal,JSON.stringify(portalBoard));
+    localStorage.setItem(LS_KEYS.hs,JSON.stringify(hsBoard));
+    // Only save user-added draft entries (not the hardcoded ones)
+    localStorage.setItem(LS_KEYS.draft_user,JSON.stringify(draftBoard.filter(function(p){return p._userAdded;})));
+  }catch(e){console.warn('localStorage save failed:',e);}
+}
+
+function loadBoards(){
+  try{
+    var p=localStorage.getItem(LS_KEYS.portal);
+    var h=localStorage.getItem(LS_KEYS.hs);
+    var d=localStorage.getItem(LS_KEYS.draft_user);
+    if(p){portalBoard=JSON.parse(p);document.getElementById('portal-count').textContent=portalBoard.length;}
+    if(h){hsBoard=JSON.parse(h);document.getElementById('hs-count').textContent=hsBoard.length;}
+    if(d){
+      var userDraft=JSON.parse(d);
+      userDraft.forEach(function(p){if(!draftBoard.find(function(x){return x.name===p.name;}))draftBoard.push(p);});
+      draftBoard.sort(function(a,b){return b.overall-a.overall;});
+      document.getElementById('draft-count').textContent=draftBoard.length;
+    }
+  }catch(e){console.warn('localStorage load failed:',e);}
+}
+
+let portalBoard=[],hsBoard=[],draftBoard=[
+  // TIER 1
+  {name:'Darryn Peterson',school:'Kansas',cls:'Fr',pos:'guard',arch:'combo guard — scoring lean',tier:'Tier 1A',overall:96,grade:'A+',preGrade:95,shooting:92,playmaking:91,defense:88,rebounding:74,board:'draft',tags:['Pick & Roll Initiator','Secondary Creator','Elite Perimeter Lockdown','3-Level Shot Creator','Championship-Level Option'],college_projection:'All-NBA Talent — #1 Overall Conversation',nba_role:'Primary offensive option — 3-level scorer who runs offense, not just a finisher. Donovan Mitchell ceiling.',green_flags:['3-level shot creation','NBA-ready P&R manipulation','elite handle and feel'],red_flags:['shot creation vs NBA length TBD','defensive consistency'],summary:'True 3-level scorer who consistently creates his own advantage. Gets downhill, plays out of P&R, hits tough pull-ups at an elite clip. The handle is NBA-ready and the offensive feel is already there. Think he can be the #1 option on a championship team.',context:'Comp: Donovan Mitchell / Bucks Ray Allen'},
+  {name:'AJ Dybantsa',school:'BYU',cls:'Fr',pos:'wing',arch:'scoring wing',tier:'Tier 1A',overall:94,grade:'A',preGrade:93,shooting:91,playmaking:82,defense:83,rebounding:79,board:'draft',tags:['Face-Up Scorer','Versatile Defender','Transition Weapon','Elite Midrange Assassin','Plays Under Control'],college_projection:'All-NBA Talent — #1 Overall Conversation',nba_role:'Elite scorer who uses length and athleticism to get shots over defenders. Already polished with clear upside. Elite midrange.',green_flags:['elite midrange shooting','plays under control','size and scoring instincts rare at this age'],red_flags:['on-ball creation still developing'],summary:'Elite scorer who uses length and athleticism to get shots off over defenders. Crafty with footwork, uses deception to create space. Plays under control, does not force shots. The combination of size, scoring instincts and efficiency at his age is rare.',context:'Comp: Paul George / Brandon Ingram'},
+  {name:'Caleb Wilson',school:'UNC',cls:'Fr',pos:'wing',arch:'switchable forward',tier:'Tier 1B',overall:92,grade:'A',preGrade:91,shooting:72,playmaking:76,defense:94,rebounding:89,board:'draft',tags:['Switchable 1-5','Rim Protector','High Motor','Highest Floor In Class','Athleticism Erases Mistakes'],college_projection:'All-NBA Talent — #1 Overall Conversation',nba_role:'Switchable defensive anchor who guards every position and protects the rim. Offensively flashes face-up creation. Colin Murray-Boyles in the playoffs — Wilson can be better.',green_flags:['most switchable defender in draft','guards all 5 positions + rim protection','athleticism erases mistakes'],red_flags:['offensive creation still developing'],summary:'Highest floor in the class because of defensive versatility and ability to impact winning without the ball. Most switchable defender in the draft, can guard across positions while protecting the rim — a rare combination. Offensively flashes real face-up scoring potential.',context:'Comp: Jaden McDaniels / Evan Mobley hybrid'},
+  {name:'Cameron Boozer',school:'Duke',cls:'Fr',pos:'big',arch:'pick-and-pop 4/5',tier:'Tier 1B',overall:90,grade:'A',preGrade:89,shooting:84,playmaking:83,defense:76,rebounding:85,board:'draft',tags:['Pick & Pop Assassin','Short Roll Finisher','Post Scorer','Polished Offensive Hub','Footwork & Touch Big'],college_projection:'All-NBA Talent — #1 Overall Conversation',nba_role:'Polished offensive big — footwork, touch, physicality. Effective P&R big who scores or passes. Jumpshot will only improve. Love Boozer.',green_flags:['most polished offensive big in class','post scoring and spacing combo','elite feel as passer'],red_flags:['undersized for true 5'],summary:'One of the most polished offensive players in the class. Well-rounded scoring built on footwork, touch, and physicality. Operates effectively from the post, scoring or passing. Steps out and spaces the floor. Will be an effective P&R big.',context:'Comp: Al Horford'},
+  // TIER 2
+  {name:'Labaron Philon',school:'Alabama',cls:'Fr',pos:'guard',arch:'pure PG',tier:'Tier 2',overall:87,grade:'A-',preGrade:86,shooting:85,playmaking:88,defense:71,rebounding:64,board:'draft',tags:['Pick & Roll Initiator','Secondary Creator','Transition Weapon','Craft Finisher At Rim','Constant Offensive Pressure'],college_projection:'Elite PG Prospect — Lottery',nba_role:'Dynamic offensive guard who consistently creates advantages. Scores at rim with touch and craft, makes great decisions when defenses load up. Safe bet to be a good NBA player.',green_flags:['three-level scoring','constant pressure on defense','elite offensive translatable skill'],red_flags:['defensive concerns due to size and frame'],summary:'Dynamic offensive guard who consistently creates advantages one-on-one. Scores at the rim with touch and craft despite lighter frame, makes great decisions. Feels like what people thought Bones Hyland and Rob Dillingham were.',context:'Comp: Tyrese Maxey lite / Jordan Clarkson floor'},
+  {name:'Kingston Flemings',school:'Georgia',cls:'Fr',pos:'guard',arch:'combo guard — balanced',tier:'Tier 2',overall:86,grade:'A-',preGrade:85,shooting:83,playmaking:86,defense:78,rebounding:67,board:'draft',tags:['Pick & Roll Initiator','Good On-Ball Defender','Off-Ball Shooter','Two-Way Guard','No Clear Weakness'],college_projection:'Elite PG Prospect — Lottery',nba_role:'Well-rounded guard who impacts both ends. Operates effectively in P&R, plays on or off the ball, makes good decisions under pressure. No clear weaknesses.',green_flags:['impacts both ends','operates on or off ball','solid shotmaker with explosiveness'],red_flags:['size concern vs larger NBA guards'],summary:'Well-rounded guard who impacts the game on both ends. No clear weaknesses. Main concern is size and how it affects ceiling against larger NBA guards. Think he will compete defensively and eventually become elite.',context:'Comp: Jrue Holiday / D. Fox'},
+  {name:'Keaton Wagler',school:'Iowa State',cls:'So',pos:'guard',arch:'pure PG',tier:'Tier 2',overall:85,grade:'A-',preGrade:84,shooting:87,playmaking:87,defense:69,rebounding:65,board:'draft',tags:['Pick & Roll Initiator','Catch & Shoot Specialist','Floor Spacer','Pace & Control Manipulator','Does Not Play Above Rim'],college_projection:'Elite PG Prospect — Lottery',nba_role:'Patient size-based scorer who controls game through pace. Gets into paint via P&R, draws fouls, efficient from three and FT line. Projects as offensive initiator who can run a team.',green_flags:['elite catch and shoot and off dribble three','controls game through feel','draws fouls at solid rate'],red_flags:['does not play above rim','finishing upside limited'],summary:'Patient, size-based scorer who controls the game through pace and decision-making. Projects as offensive initiator who can run a team and make winning decisions night after night.',context:'Comp: Tyrese Halliburton'},
+  {name:'Darius Acuff',school:'Arkansas',cls:'Fr',pos:'guard',arch:'scoring guard',tier:'Tier 2',overall:84,grade:'B+',preGrade:83,shooting:88,playmaking:82,defense:67,rebounding:62,board:'draft',tags:['Pick & Roll Initiator','Off-Ball Shooter','Secondary Creator','Elite Iso Creator','Defensive Liability Concern'],college_projection:'Elite PG Prospect — Lottery',nba_role:'Elite shot creator in iso and P&R. Real scoring instincts, hits tough shots in traffic. Size and defensive limitations are the concern in playoff settings.',green_flags:['elite three pointer','great playmaking','creates offense at high level'],red_flags:['defensive limitations in playoffs','size concerns'],summary:'Elite shot creator who can generate offense at a high level both in isolation and out of P&R. Real scoring instincts. Size and defensive limitations make him a potential target in playoff settings.',context:'Comp: Darius Garland / Damian Lillard'},
+  {name:'Mikel Brown Jr.',school:'Oklahoma',cls:'Fr',pos:'guard',arch:'combo guard — scoring lean',tier:'Tier 2',overall:83,grade:'B+',preGrade:82,shooting:86,playmaking:84,defense:68,rebounding:63,board:'draft',tags:['Pick & Roll Initiator','Catch & Shoot Specialist','Secondary Creator','Top Percentile Spot-Up','Turnover Concern'],college_projection:'Elite PG Prospect — Lottery',nba_role:'Impressive offensive skill set for a freshman. P&R handle top 10 percentile, spot-up top 3 percentile. Turnovers and decision making are the separator from elite tier.',green_flags:['top 3 percentile spot-up shooting','P&R manipulation impressive','multi-action scorer'],red_flags:['shot selection issues','sloppy passing','injuries in college'],summary:'Offensive skill set is very impressive for a freshman. P&R ball handle grades out in the top ten percentile, spot-up shooting top three percentile. Turnovers and decision making hold him back from elite tier.',context:'Comp: Coby White / LaMelo'},
+  // TIER 3
+  {name:'Yaxel Lendeborg',school:'Michigan',cls:'Jr',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 3',overall:81,grade:'B+',preGrade:80,shooting:68,playmaking:72,defense:85,rebounding:91,board:'draft',tags:['Physical Enforcer','Glass Crasher','Versatile Defender','Physicality & Toughness Anchor','Low Usage High Impact'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'Physically imposing forward who impacts through strength, finishing, and rebounding. Highly efficient around the rim, elite rebounding, defensive versatility. Perfect playoff big.',green_flags:['elite rebounding','highly efficient around rim','defensive versatility multiple positions'],red_flags:['shooting development needed'],summary:'Physically imposing forward who impacts the game through strength, finishing, and rebounding. The NBA playoffs is all about versatile defenders and low-usage guys who do not need shots called for them.',context:'Comp: Current Aaron Gordon'},
+  {name:'Dailyn Swain',school:'Ole Miss',cls:'Jr',pos:'wing',arch:'two-way wing',tier:'Tier 3',overall:80,grade:'B+',preGrade:79,shooting:74,playmaking:69,defense:84,rebounding:82,board:'draft',tags:['Switchable 2-4','Glass Crasher','Transition Weapon','Swiss Army Knife Wing','Improved Jumper'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'Versatile Swiss Army knife wing. 6\'7" strong frame, thrives in transition, defends multiple positions, rebounds at high level for a wing. If shooting becomes consistent, high-level two-way guy.',green_flags:['elite athleticism and physicality','jumper improved noticeably','rebounds at high level for wing'],red_flags:['shooting consistency not fully there yet'],summary:'One of the most versatile Swiss Army knife wings in the class. Elite athleticism, physicality, and all-around impact. Grew on me a lot watching film. If the shooting becomes consistent, projects as a high-level two-way guy.',context:'Comp: Jerami Grant / Mikal Bridges'},
+  {name:'Hannes Steinbach',school:'Michigan State',cls:'Jr',pos:'big',arch:'traditional center',tier:'Tier 3',overall:79,grade:'B+',preGrade:78,shooting:72,playmaking:76,defense:71,rebounding:92,board:'draft',tags:['Short Roll Finisher','Glass Crasher','Post Scorer','Double-Double Machine','P&R Feel & Vision'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'High-floor big who impacts through rebounding, feel, and interior scoring. Double-double machine. Elite rebounder, reliable P&R finisher. 20 and 10 in the Big Ten is no joke.',green_flags:['20 and 10 in Big Ten','elite rebounder creates extra possessions','strong instincts to facilitate'],red_flags:['defense may be limitation in league','mobility or shot blocking needs to improve'],summary:'High-floor big man who impacts through rebounding, feel, and interior scoring. Elite rebounder who consistently creates extra possessions. Strong instincts to facilitate and make right reads out of post or short roll.',context:'Comp: Ivica Zubac'},
+  {name:'Brayden Burries',school:'Missouri',cls:'So',pos:'guard',arch:'scoring guard',tier:'Tier 3',overall:78,grade:'B+',preGrade:77,shooting:88,playmaking:72,defense:74,rebounding:61,board:'draft',tags:['Catch & Shoot Specialist','Off-Ball Shooter','Good On-Ball Defender','Movement Shooter','Dream Off-Ball Guard'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'Scoring-oriented role player who provides efficient offense without high usage. Tough shotmaker, movement threes, creates own shot in smaller doses. Dream off-ball guard in modern NBA.',green_flags:['movement shooter','limits turnovers','plays within system'],red_flags:['low-ceiling offensive role player'],summary:'Scoring-oriented role player who provides efficient offense without needing high usage. Tough shotmaker who can hit movement threes. A dream off-ball guard in the modern NBA.',context:'Comp: Norman Powell / Jarod McCain'},
+  {name:'Aday Mara',school:'Barcelona',cls:'prospect',pos:'big',arch:'defensive anchor',tier:'Tier 3',overall:77,grade:'B',preGrade:76,shooting:64,playmaking:72,defense:89,rebounding:83,board:'draft',tags:['Rim Protector','Lob Threat','True Rim Protector','DHO Action Passer','Scheme Dependent Big'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'True rim-protecting five who blocks shots at a high level and anchors a defense. Scheme-dependent but court vision and passing is impressive. At worst situational backup who changes shots.',green_flags:['elite shot blocking','court vision and passing impressive','DHO actions potential'],red_flags:['mobility in space concerns','scheme dependent'],summary:'This archetype will always have real value. True rim-protecting five who blocks shots at a high level. Court vision and passing could make him effective in DHO actions. At worst a situational backup who changes shots.',context:'Comp: Walker Kessler / Donovan Clingan+'},
+  {name:'Morez Johnson Jr.',school:'Illinois',cls:'So',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 3',overall:76,grade:'B',preGrade:75,shooting:68,playmaking:64,defense:83,rebounding:88,board:'draft',tags:['Physical Enforcer','Glass Crasher','Rim Protector','High Motor','Dog Mentality'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'High-level versatile role player who impacts winning without the ball. Physical, high-motor, a dog. Rebounds at high level, finishes efficiently. If shooting develops, fits cleanly in any lineup.',green_flags:['high motor every night','rebounds and finishes with strength','starting to show floor spacing'],red_flags:['shooting development key to ceiling'],summary:'High-level versatile role player who impacts winning without needing the ball. Physical, high-motor guy, he\'s a dog. If the shooting continues to develop, fits cleanly in any lineup.',context:'Comp: PJ Washington / Onyeka Okongwu'},
+  // TIER 4
+  {name:'Jayden Quaintance',school:'Arizona State',cls:'Fr',pos:'big',arch:'defensive anchor',tier:'Tier 4',overall:74,grade:'B',preGrade:73,shooting:58,playmaking:62,defense:90,rebounding:84,board:'draft',tags:['Rim Protector','Switchable 3-5','High Motor','Insane Physical Profile','FT Concern'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'Switchable five who cannot get picked on in P&R. Elite rim protection instincts. Offensively limited, not a creator. FT numbers concerning but physical profile is absurd.',green_flags:['elite rim protection instincts','switchable five — rare physical profile','block % highly impressive'],red_flags:['injury history','free throw numbers real concern','limited half-court offense'],summary:'Injury history is real but lower in the draft teams could get a steal. Physical profile is crazy. Switchable five who cannot get picked on in P&R along with elite rim protection awareness.',context:'Comp: Jalen Duren / Robert Williams but more athletic'},
+  {name:'Ebuka Okorie',school:'VCU',cls:'Jr',pos:'guard',arch:'scoring guard',tier:'Tier 4',overall:73,grade:'B',preGrade:72,shooting:83,playmaking:82,defense:74,rebounding:62,board:'draft',tags:['Pick & Roll Initiator','Secondary Creator','Catch & Shoot Specialist','Shifty Downhill Creator','Smooth Underrated Jumper'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'Elite scoring PG who creates at all three levels. Quick and shifty, plays with patience. Frame and size concern at next level but skill set to run offense and generate buckets is very real.',green_flags:['three-level scorer','smooth jumper underrated','active hands defensively'],red_flags:['only 35% from three','frame concerns at NBA level'],summary:'Elite scoring point guard who can create offense at all three levels and control the game with his pace. Think his jumper is super smooth and being underrated. Think he can be a playoff rotation level player.',context:'Comp: Dennis Schroder / Patty Mills'},
+  {name:'Cameron Carr',school:'Alabama',cls:'Jr',pos:'wing',arch:'scoring wing',tier:'Tier 4',overall:73,grade:'B',preGrade:72,shooting:90,playmaking:68,defense:65,rebounding:71,board:'draft',tags:['Catch & Shoot Specialist','Off-Ball Shooter','Floor Spacer','Deep Range Shooter','Shot Creates Gravity'],college_projection:'Highly Efficient Winning Piece — Good Starter',nba_role:'High-level catch and shoot with fluid movement, great percentages, deep range. Creates real gravity. Right system unlocks defensive potential. Smooth jumper, elite rim efficiency, elite athleticism.',green_flags:['elite shooting percentages','vertical athleticism as finisher','creates real gravity'],red_flags:['defense not great right now','offensive value must carry him'],summary:'High-level catch and shoot with fluid movement and deep range. Shooting creates real gravity that opens everything around him. The right system will unlock his defensive potential.',context:'Comp: Malik Monk / Terence Ross'},
+  {name:'Isaiah Evans',school:'Duke',cls:'Fr',pos:'wing',arch:'3&D wing',tier:'Tier 4',overall:72,grade:'B',preGrade:71,shooting:89,playmaking:65,defense:70,rebounding:63,board:'draft',tags:['Catch & Shoot Specialist','Off-Ball Shooter','Jet Cut Weapon','Natural Movement Shooter','Difficult Release Point'],college_projection:'Higher Than Consensus — Definite NBA Role Player',nba_role:'Elite shooting prospect. Size and length allow him to get shot off clean. Projects as high-level off-ball weapon. Natural movement shooter. This year better with ball in hands — secondary creation upside.',green_flags:['extremely difficult to contest at release','natural movement shooter','good length and solid athleticism'],red_flags:['needs to add strength','physicality and defense concerns'],summary:'Elite shooting prospect whose value comes from spacing the floor and scoring off movement. Size and length allow him to get his shot off clean. Natural movement shooter with secondary creation upside.',context:'Comp: Aaron Nesmith'},
+  {name:'Bennett Stirtz',school:'Iowa',cls:'Sr',pos:'guard',arch:'pure PG',tier:'Tier 4',overall:71,grade:'B-',preGrade:70,shooting:82,playmaking:80,defense:68,rebounding:61,board:'draft',tags:['Pick & Roll Initiator','Catch & Shoot Specialist','Secondary Creator','Mid-Range Reliability','Ceiling Higher Than Consensus'],college_projection:'Higher Than Consensus — Definite NBA Role Player',nba_role:'Point guard who reliably runs offense in P&R and scores off the bounce. Plays with control, makes right reads, does not force anything. Mid-range is his spot. Ceiling higher than consensus.',green_flags:['great feel and decision making','efficient and clean in P&R','mid-range reliability'],red_flags:['not overly dynamic','ceiling tied entirely to efficiency'],summary:'Projects as a point guard who can reliably run an offense in P&R and score off the bounce. Plays with control, makes the right reads. Think his ceiling is higher than most people give him credit for.',context:'Comp: Ty Jerome / Austin Reaves'},
+  // TIER 5
+  {name:'Joshua Jefferson',school:'Arkansas',cls:'Jr',pos:'wing',arch:'versatile connector wing',tier:'Tier 5',overall:69,grade:'C+',preGrade:68,shooting:74,playmaking:72,defense:75,rebounding:76,board:'draft',tags:['Versatile Defender','Secondary Creator','Glass Crasher','Smart Passing Wing','Elite Complementary Piece'],college_projection:'Higher Than Consensus — Definite NBA Role Player',nba_role:'Smart physical wing with steady presence on both ends. NBA-ready body, rebounds well, understands positioning. Improved as shooter. Elite complementary player for contending team.',green_flags:['improved shooter over time','passing playmaking and game sense clear','NBA-ready body'],red_flags:['bullying smaller defenders may not translate','limited creator'],summary:'Smart, physical wing who brings a steady presence on both ends. His passing, playmaking, and overall sense of the game give him a clear role as an elite complementary player for a contending team.',context:'Comp: Boris Diaw / Keldon Johnson'},
+  {name:'Chris Cenac Jr.',school:'Texas',cls:'Jr',pos:'big',arch:'stretch 4',tier:'Tier 5',overall:68,grade:'C+',preGrade:67,shooting:72,playmaking:61,defense:84,rebounding:79,board:'draft',tags:['Rim Protector','Switchable 3-5','Dunker Spot Threat','Elite Block & Steal Rates','Developing Stretch Big'],college_projection:'Higher Than Consensus — Definite NBA Role Player',nba_role:'Elite block and steal percentages. 6\'10" with 7\'3" wingspan, active hands. Even if shot does not fully develop, rim protector who finishes lobs and stays attached to quicker players on perimeter.',green_flags:['elite block and steal rates','athleticism closes on perimeter players','midrange two-point percentage encouraging'],red_flags:['not a creator','shot blocking instincts need improvement'],summary:'The block and steal percentages here are elite. Active hands and closes on perimeter players — rare quality that does not show up in box scores. Mid-range two-point shooting is the most encouraging offensive sign.',context:'Comp: Kel\'el Ware'},
+  {name:'Koa Peat',school:'Arizona State',cls:'Fr',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 5',overall:67,grade:'C+',preGrade:66,shooting:61,playmaking:64,defense:78,rebounding:84,board:'draft',tags:['Physical Enforcer','Glass Crasher','Versatile Defender','High Motor','Shooting Unlock Key'],college_projection:'Higher Than Consensus — Definite NBA Role Player',nba_role:'High-floor physically ready forward. Projects as strong role player because of body, motor, and impact without the ball. Main limitation is lack of shooting which caps offensive ceiling and playoff fit.',green_flags:['physically ready body','rebounds at high level','defends multiple frontcourt positions'],red_flags:['lack of shooting caps ceiling significantly','limited playoff fit without jumper'],summary:'High-floor, physically ready forward who projects as a strong role player because of his body, motor, and ability to impact the game without the ball. If the three-point shot develops, unlocks a much cleaner fit as a modern four.',context:'Comp: Rui Hachimura if he unlocks the jumper'},
+  // TIER 6
+  {name:'Nate Ament',school:'Washington State',cls:'Jr',pos:'wing',arch:'stretch forward',tier:'Tier 6',overall:65,grade:'C',preGrade:64,shooting:81,playmaking:65,defense:64,rebounding:68,board:'draft',tags:['Catch & Shoot Specialist','Face-Up Scorer','Floor Spacer','High Release Shooter','Needs Right Situation'],college_projection:'Lower Than Consensus',nba_role:'Intriguing upside swing. 6\'10" operates like a true wing. High release gets shots off consistently. Struggles to finish at rim consistently, lacks burst. High upside offensive player who needs right situation.',green_flags:['rare size and perimeter skill combination','high release difficult to contest','advanced feel for drawing fouls'],red_flags:['lacks burst and vertical pop','struggles to finish at rim for his size','lower than consensus'],summary:'One of the more intriguing upside swings in the class, rare combination of size and perimeter skill. Needs the right situation with good coaching. One of the guys lower on than the consensus.',context:'Comp: Kyle Kuzma / Risacher'},
+  {name:'Allen Graves',school:'Florida',cls:'Jr',pos:'big',arch:'stretch 4',tier:'Tier 6',overall:65,grade:'C',preGrade:64,shooting:80,playmaking:61,defense:72,rebounding:74,board:'draft',tags:['Catch & Shoot Specialist','Floor Spacer','Switchable 3-5','Knows His Role','Analytics Darling'],college_projection:'Lower Than Consensus',nba_role:'Secondary rim protector who spaces the floor without needing the ball. Gets to spot, finishes plays, does not force anything. Worry he could struggle guarding athletic wings and be forced to small-ball five.',green_flags:['top half nationally on dunks and at rim','three-point percentage on high sample real','nearly all threes assisted — knows his role'],red_flags:['could struggle guarding athletic wings','may be forced into small-ball five'],summary:'Checks a box that is hard to find, and analytic darlings are in love with. The role is clear: get to your spot, finish plays, do not force anything. In playoff basketball, lengthy defenders who space the floor and do not need touches are invaluable.',context:'Comp: Robert Covington'},
+  {name:'Christian Anderson',school:'Princeton',cls:'Jr',pos:'guard',arch:'pure PG',tier:'Tier 6',overall:64,grade:'C',preGrade:63,shooting:80,playmaking:79,defense:58,rebounding:59,board:'draft',tags:['Pick & Roll Initiator','Catch & Shoot Specialist','Secondary Creator','Elite P&R Assist Rate','Body Limitation'],college_projection:'Lower Than Consensus',nba_role:'Backup guard who runs P&R cleanly, shoots three off the dribble, keeps offense humming. 30% assist rate in P&R is elite. Body and size limitations will define his ceiling.',green_flags:['30% assist rate in P&R elite','makes right reads and generates offense','efficient off the dribble three'],red_flags:['undersized and does not play above rim','hide on defense in playoffs'],summary:'The efficiency numbers here are impressive. Nearly half his offensive possessions come as a P&R ball handler at elite rate. Concern is entirely about the body. Backup guard who can run P&R cleanly and shoot three off dribble is useful.',context:'Comp: Jason Terry'},
+  // TIER 7 / SECOND ROUND
+  {name:'Trevon Brazile',school:'Arkansas',cls:'Jr',pos:'big',arch:'stretch 4',tier:'Tier 7',overall:62,grade:'C-',preGrade:61,shooting:76,playmaking:64,defense:74,rebounding:79,board:'draft',tags:['Floor Spacer','Switchable 3-5','Glass Crasher','Slept On Athletic Profile','Needs To Get Stronger'],college_projection:'Second round',nba_role:'Athletic profile being slept on. 6\'10" with 7\'3.75" wingspan, bouncy, switchable, real three-point shot. Needs to get stronger. Can be used as four or five.',green_flags:['rare combination of wingspan and shot','elite transition numbers','three-point shooting on 130+ attempts is real'],red_flags:['needs to get stronger','still developing role identity'],summary:'The athletic profile here is being slept on. 6\'10" with a 7\'3.75" wingspan, bouncy, switchable, and a real three-point shot. That combination does not grow on trees.',context:'Comp: Tari Eason'},
+  {name:'Henri Veesaar',school:'Kentucky',cls:'Fr',pos:'big',arch:'pick-and-pop 4/5',tier:'Tier 7',overall:62,grade:'C-',preGrade:61,shooting:78,playmaking:72,defense:55,rebounding:78,board:'draft',tags:['Pick & Pop Assassin','Short Roll Finisher','Floor Spacer','Elite Two-Man Game','Defensive Questions'],college_projection:'Second round',nba_role:'Runs two-man game as well as anyone in class. Top percentile as roll man, combo of elite rim finishing and legit three makes him super effective. Defensive issues determine starter vs situational piece.',green_flags:['elite rim finishing and three-point combo','if you drop he hits three if you hedge he finishes','offensive profile very strong'],red_flags:['defensive numbers below average across board','big questions about holding up on switches'],summary:'Skilled offensive big man who runs the two-man game as well as anyone in this class. The offensive profile is very strong; the defensive profile holds him back. Honest question: is it effort or physical tools?',context:'Comp: Current Nikola Vucevic'},
+  {name:'Keyshawn Hall',school:'Connecticut',cls:'Sr',pos:'wing',arch:'3&D wing',tier:'Tier 7',overall:62,grade:'C-',preGrade:61,shooting:82,playmaking:58,defense:72,rebounding:77,board:'draft',tags:['Catch & Shoot Specialist','Off-Ball Shooter','Glass Crasher','Spot-Up Top 10 Nationally','Knows Exactly What He Is'],college_projection:'Second round',nba_role:'Big physical wing who spaces the floor and does not need plays called. Spot-up in top 10 percentile nationally. Not a creator — that is fine if you know what you are buying.',green_flags:['spot-up shooting top 10 percentile nationally','good instincts hands and motor','makes FTs at high clip — real shooters do'],red_flags:['average at rim for his size and strength','zero half-court creation ceiling'],summary:'The case for Hall is straightforward. Big, strong 6\'7" wing with real three-point shot, rebounds at high level for position. Not a creator. He is a big physical wing who spaces the floor and does not need plays called for him.',context:''},
+  {name:'Izaiyah Nelson',school:'Arizona',cls:'Jr',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 7',overall:61,grade:'C-',preGrade:60,shooting:62,playmaking:63,defense:79,rebounding:83,board:'draft',tags:['Physical Enforcer','Glass Crasher','Lob Threat','Dunker Spot Threat','Freak Athlete Archetype Sticks'],college_projection:'Second round',nba_role:'Size and athleticism fly off charts. 6\'10" who can guard multiple positions, does not need defined role. Just defend, compete, find ways to impact. Finishing numbers legit. Archetype sticks.',green_flags:['6\'10" freak athlete who guards multiple positions','elite on dunks above average overall at rim','FT% gives hope for three development'],red_flags:['still developing defined role'],summary:'The size and athleticism fly off the charts. At 6\'10" with athleticism to guard multiple positions, the archetype should stick. A 6\'10" freak athlete who can defend multiple positions, finish at the rim, rebound — exactly what contending teams want in their 8th-10th men.',context:'Comp: Wendell Carter Jr. / Onyeka Okongwu'},
+  {name:'Richie Saunders',school:'Utah',cls:'Sr',pos:'wing',arch:'3&D wing',tier:'Tier 7',overall:61,grade:'C-',preGrade:60,shooting:83,playmaking:59,defense:70,rebounding:68,board:'draft',tags:['Catch & Shoot Specialist','Catch-and-Stampede Runner','Good On-Ball Defender','98th Percentile Handoffs','Downhill Better Than Thought'],college_projection:'Second round',nba_role:'High-floor low-ceiling. Path is clearly defined: shoot it, move without the ball, compete defensively. 98th percentile handoffs — functions in complex systems not just standing in corner.',green_flags:['98th percentile handoff numbers','spot-up 89th percentile','close-2 .694 on 68 attempts quietly elite'],red_flags:['not a creator','bigger wings will be matchup problem'],summary:'High-floor, low-ceiling prospect whose path to NBA is clearly defined. Handoff numbers rank in 98th percentile. Can stampede downhill and finish at the rim. Solid 2-guard who spaces floor and puts it on ground better than people think.',context:'Comp: Collin Gillespie? / Sam Hauser'},
+  {name:'Maleek Thomas',school:'Georgia',cls:'Jr',pos:'guard',arch:'3&D wing',tier:'Tier 7',overall:60,grade:'D+',preGrade:59,shooting:84,playmaking:61,defense:69,rebounding:61,board:'draft',tags:['Catch & Shoot Specialist','Catch-and-Stampede Runner','Good On-Ball Defender','41pct Three On SEC Volume','Low Creation Ceiling'],college_projection:'Second round',nba_role:'41.6% from three on 80+ attempts vs SEC is the engine. Defenses respecting shot give driving lanes. Not going to run your offense. Knocks down threes and attacks when given reason. Winning piece in structured system.',green_flags:['41.6% from three on volume vs SEC','84.3% from FT line','great hands and instincts defensively'],red_flags:['low ceiling','not a great creator','lacks speed to be elite with ball'],summary:'The three-point shooting at 41.6% on over 80 attempts against SEC competition is the engine that makes everything else work. The role is very clear. He knocks down threes and can put the ball on the floor and attack when defenses give him a reason.',context:'Comp: Evan Fournier / Gary Harris'},
+  {name:'Zuby Ejiofor',school:'Northwestern',cls:'Jr',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 7',overall:59,grade:'D+',preGrade:58,shooting:65,playmaking:63,defense:76,rebounding:82,board:'draft',tags:['Physical Enforcer','Glass Crasher','Short Roll Finisher','Moves Well For His Size','Jumper In Progress'],college_projection:'Early second round',nba_role:'6\'7.5" with 7\'2" wingspan who actually moves well. Post-up heavy, P&R roll and putback numbers very good. Athletic build and mobility give tools to defend four and five. If rebounding and shooting are there, early second value.',green_flags:['moves well for his size','P&R roll and putback numbers very good','athletic build and mobility for defense'],red_flags:['jump shot work in progress','post-up heavy usage may not translate'],summary:'Measurements are excellent and what separates him is how well he actually moves. Offensive P&R roll and putback numbers very good. Athletic build and mobility give tools to defend both four and five.',context:'Comp: Precious Achiuwa'},
+  {name:'Tarris Reed Jr.',school:'Michigan',cls:'Sr',pos:'big',arch:'PF — motor/rebounder',tier:'Tier 7',overall:59,grade:'D+',preGrade:58,shooting:58,playmaking:60,defense:77,rebounding:84,board:'draft',tags:['Physical Enforcer','Glass Crasher','Dunker Spot Threat','Baby Hook Bread & Butter','Defined Backup Big'],college_projection:'Fringe first / early second',nba_role:'Big physical post presence who wins through strength and positioning. Baby hook off right hand is bread and butter. Not a finesse player. Defined backup big who rebounds hard, sets physical screens, does not need much to be functional.',green_flags:['combine versatility impressed scouts','baby hook reliable and consistent','physical screens and rebounding real'],red_flags:['not an offensive hub at NBA level','everything predicated on size and physicality'],summary:'Reed is a big, physical post presence who wins through strength and positioning. The honest limitation is he is not going to be an offensive hub. Defined backup big who rebounds hard and sets physical screens.',context:'Comp: Adem Bona'},
+  {name:'Jaden Bradley',school:'Arizona',cls:'Jr',pos:'guard',arch:'combo guard — balanced',tier:'Tier 7',overall:58,grade:'D+',preGrade:57,shooting:78,playmaking:77,defense:74,rebounding:63,board:'draft',tags:['Pick & Roll Initiator','Catch & Shoot Specialist','Good On-Ball Defender','Mid-Range Pull-Up PG','2.5 A/TO Ratio'],college_projection:'Second round',nba_role:'Undersized combo guard who plays with good pace and translatable mid-range game. 2.5 A/TO ratio, 23% assist percentage. Bullies smaller guards downhill using balance and strength. Good backup guard.',green_flags:['2.6 steal percentage','51.2 FTR','40% from three plus mid-range pull-up'],red_flags:['physical guards do bother him','undersized for NBA combo guard'],summary:'Undersized but plays with good pace and translatable mid-range game. Got better each year. Strong defensive instincts and good team defender. Trust him to become a good backup guard in the league.',context:'Comp: Jamal Shead / Jevon Carter'},
+  {name:'Ugonna Onyenso',school:'Kentucky',cls:'Jr',pos:'big',arch:'defensive anchor',tier:'Tier 7',overall:58,grade:'D+',preGrade:57,shooting:56,playmaking:58,defense:88,rebounding:80,board:'draft',tags:['Rim Protector','Lob Threat','Physical Enforcer','17pct Block Rate Elite','Taking Him On The Body'],college_projection:'Second round',nba_role:'7\'5" wingspan in a different category. Production finally catching up to tools. 17% block rate at 2.7 fouls per 40 is elite. Pick and pop potential developing. Taking him on the body and the potential.',green_flags:['17% block rate at 2.7 fouls per 40 — elite','7\'5\" wingspan untouchable','pick and pop mechanics showing promise'],red_flags:['never attempted three before this year','production still developing to match tools'],summary:'A body you simply cannot teach. The 7\'5" wingspan puts him in a different category and this year production finally started catching up to tools. At worst, the floor is a shot-blocking, lob-threat big man.',context:''},
+  {name:'Tamin Lipsey',school:'Iowa State',cls:'Jr',pos:'guard',arch:'defensive-minded guard',tier:'Tier 7',overall:57,grade:'D',preGrade:56,shooting:68,playmaking:76,defense:87,rebounding:64,board:'draft',tags:['Pick & Roll Initiator','Defensive Disruptor','Good On-Ball Defender','Big 12 DBPM Leader 2x','5.9 Ast To 0.8 Tov'],college_projection:'Second round',nba_role:'Hard-nosed backup PG. Led Big 12 in DBPM two years in a row. Path to minutes is on-ball P&R guard who plays hard at other end. 5.9 assists to 0.8 turnovers with 2.4 steals per game does not disappear.',green_flags:['Big 12 DBPM leader two years running','5.9 ast to 0.8 tov discipline is real','G League combine standout'],red_flags:['three-point shooting real concern at 6\'1"','mid-range and floater average right now'],summary:'The role would have to be hard-nosed backup point guard. What separates him from other guards at this level is defense. The possession discipline is real — 5.9 assists to 0.8 turnovers. That does not just disappear at the next level.',context:'Comp: Ish Smith'},
+  {name:'Otega Oweh',school:'Tennessee',cls:'Jr',pos:'wing',arch:'two-way wing',tier:'Tier 7',overall:56,grade:'D',preGrade:55,shooting:71,playmaking:66,defense:75,rebounding:68,board:'draft',tags:['Versatile Defender','Catch & Shoot Specialist','High Motor','On & Off Ball Versatile','No Defined Specialty Yet'],college_projection:'Late second round',nba_role:'Versatility is the draw. Can play on or off ball, competes hard defensively, brings energy and physicality. No defined specialty skill yet. Tools are real and upside genuine if right system maximizes him.',green_flags:['back to back strong combine showings','defensive effort and physicality','on-ball versatility'],red_flags:['no defined specialty skill','questions about role in structured rotation'],summary:'A strong second half of the season revived his draft stock. He can play on or off the ball, competes hard defensively. Type of guy you take a flyer on late because tools are real and upside is genuine.',context:'Comp: Caleb Martin / DeAnthony Melton'},
+  {name:'Emanuel Sharp',school:'Houston',cls:'Jr',pos:'guard',arch:'off-ball shooter',tier:'Tier 7',overall:56,grade:'D',preGrade:55,shooting:90,playmaking:55,defense:68,rebounding:58,board:'draft',tags:['Catch & Shoot Specialist','Off-Ball Shooter','Jet Cut Weapon','309 Career Threes','Runs Off Screens'],college_projection:'Mid second round',nba_role:'309 career threes tell you exactly what you are buying. One of the purest off-ball shooters in recent college history. Runs off screens, catches and shoots on the move. Cannot create own shot at high level. Role is clear.',green_flags:['309 career threes — real track record','runs off screens and catches in movement','low turnover and high steal percentage'],red_flags:['cannot create own shot at high level'],summary:'Sharp\'s 309 career threes tell you exactly what you are buying. One of the most purest off-ball shooters in recent college basketball history. A high-floor off-ball shooting specialist with that kind of track record on volume finds a job in this league.',context:'Comp: Houston guard pipeline'},
+  {name:'Ja\'Kobi Gillespie',school:'Belmont',cls:'Sr',pos:'guard',arch:'scoring guard',tier:'Tier 7',overall:55,grade:'D',preGrade:54,shooting:84,playmaking:74,defense:54,rebounding:57,board:'draft',tags:['Catch & Shoot Specialist','Pick & Roll Initiator','Secondary Creator','Off-Ball Shooter'],college_projection:'Late second round',nba_role:'Microwave scoring guard who generates instant offense from anywhere. 18.4 points, 5.4 assists, 2.1 steals. Combine standout — 28 points and five threes in Game 1. Concern entirely the body — under 6\'0" barefoot.',green_flags:['combine standout — 28 pts and 5 threes game 1','18.4 pts 5.4 ast 2.1 stl','feel and shotmaking undeniable'],red_flags:['under 6\'0\" barefoot — cannot guard anyone in playoffs','concern entirely the body'],summary:'A microwave scoring guard who can generate instant offense from anywhere on the floor. At his size he has no business scoring the way he does, but the feel and shotmaking are undeniable. Backup guard role if shooting and pull-up in P&R spots are reliable.',context:'Comp: Shabazz Napier'}
+];
+function saveEval(){
+  if(!lastEval)return;
+  const board=lastEval.board||'portal';
+  if(board==='portal'){
+    if(portalBoard.find(p=>p.name===lastEval.name)){alert('already on portal board');return;}
+    lastEval._userAdded=true;
+    portalBoard.push({...lastEval});
+    portalBoard.sort((a,b)=>b.overall-a.overall);
+    document.getElementById('portal-count').textContent=portalBoard.length;
+    renderBoard('portal',portalBoard,'portal');
+    saveBoards();
+  }else if(board==='hs'){
+    if(hsBoard.find(p=>p.name===lastEval.name)){alert('already on HS board');return;}
+    lastEval._userAdded=true;
+    hsBoard.push({...lastEval});
+    hsBoard.sort((a,b)=>b.overall-a.overall);
+    document.getElementById('hs-count').textContent=hsBoard.length;
+    renderBoard('hs',hsBoard,'hs');
+    saveBoards();
+  }else{
+    if(draftBoard.find(p=>p.name===lastEval.name)){alert('already on draft board');return;}
+    lastEval._userAdded=true;
+    draftBoard.push({...lastEval});
+    draftBoard.sort((a,b)=>b.overall-a.overall);
+    document.getElementById('draft-count').textContent=draftBoard.length;
+    renderDraftBoard();
+    saveBoards();
+  }
+  alert(lastEval.name+' added to '+board+' board');
+}
+
+let boardFilters={portal:'all',hs:'all',draft:'all'};
+function filterBoard(board,f,btn){
+  boardFilters[board]=f;
+  document.querySelectorAll(`#module-${board} .filter-btn`).forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const data=board==='portal'?portalBoard:board==='hs'?hsBoard:draftBoard;
+  renderBoard(board,data,board);
+}
+
+function renderBoard(bid,data,module){
+  const empty=document.getElementById(bid+'-empty');
+  const table=document.getElementById(bid+'-table');
+  const tbody=document.getElementById(bid+'-rows');
+  if(!empty||!table||!tbody)return;
+  const f=boardFilters[bid]||'all';
+  const filtered=data.filter(p=>{
+    if(f==='all')return true;
+    if(['guard','wing','big'].includes(f))return p.pos===f;
+    if(f.startsWith('t'))return p.tier==='Tier '+f[1];
+    if(f==='sleeper')return p.sleeper;
+    if(f==='consensus')return p.consensus&&p.consensus>=4;
+    if(f==='variance')return p.variance&&p.variance>=2;
+    return true;
+  });
+  if(!filtered.length){empty.style.display='block';table.style.display='none';return;}
+  empty.style.display='none';table.style.display='table';tbody.innerHTML='';
+  filtered.forEach((p,i)=>{
+    const c=p.overall>=82?'var(--green)':p.overall>=70?'var(--blue)':p.overall>=58?'var(--amber)':'var(--red)';
+    const tc=getTierClass(p.tier);
+    const nilV=NIL_TIERS[p.tier]||50000;
+    const nilAsk=p.nilAsk||0;
+    const nilSurplus=nilAsk>0?nilV-nilAsk:null;
+    const tr=document.createElement('tr');
+    if(bid==='portal'){
+      tr.innerHTML=`<td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${i+1}</td><td><div class="board-name">${p.name}</div><div class="board-sub">${p.school||''} · ${p.arch} · ${p.cls||''}</div></td><td><span class="tier-badge ${tc}">${p.tier}</span></td><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${p.preGrade||'—'}</td><td><span class="board-score" style="color:${c}">${p.overall}</span></td><td style="font-family:'DM Mono',monospace;font-size:11px">${p.grade}</td><td style="font-family:'DM Mono',monospace;font-size:10px">$${nilV.toLocaleString()}</td><td>${nilSurplus!==null?`<span style="font-size:10px;font-weight:600;color:${nilSurplus>=0?'var(--green)':'var(--red)'}">${nilSurplus>=0?'+':''} $${nilSurplus.toLocaleString()}</span>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td><td><button class="del-btn" onclick="removeFromBoard('portal',${portalBoard.indexOf(p)})">×</button></td>`;
+    }else if(bid==='hs'){
+      tr.innerHTML=`<td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${i+1}</td><td><div class="board-name">${p.name}</div><div class="board-sub">${p.school||''} · ${p.arch} · ${p.cls||''}</div></td><td><span class="tier-badge ${tc}">${p.tier}</span></td><td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${p.preGrade||'—'}</td><td><span class="board-score" style="color:${c}">${p.overall}</span></td><td style="font-family:'DM Mono',monospace;font-size:11px">${p.grade}</td><td>${p.sleeper?'<span style="color:var(--amber);font-size:10px;font-weight:600">🚨 SLEEPER</span>':'—'}</td><td style="font-size:10px;color:var(--text2)">${p.consensus||'—'}</td><td><button class="del-btn" onclick="removeFromBoard('hs',${hsBoard.indexOf(p)})">×</button></td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+function removeFromBoard(bid,i){
+  if(bid==='portal'){portalBoard.splice(i,1);portalBoard.sort((a,b)=>b.overall-a.overall);document.getElementById('portal-count').textContent=portalBoard.length;renderBoard('portal',portalBoard,'portal');saveBoards();}
+  else if(bid==='hs'){hsBoard.splice(i,1);hsBoard.sort((a,b)=>b.overall-a.overall);document.getElementById('hs-count').textContent=hsBoard.length;renderBoard('hs',hsBoard,'hs');saveBoards();}
+  else{draftBoard.splice(i,1);draftBoard.sort((a,b)=>b.overall-a.overall);document.getElementById('draft-count').textContent=draftBoard.length;renderDraftBoard();saveBoards();}
+}
+
+function renderDraftBoard(){
+  const empty=document.getElementById('draft-empty');
+  const container=document.getElementById('draft-cards');
+  if(!draftBoard.length){empty.style.display='block';container.innerHTML='';return;}
+  empty.style.display='none';
+  container.innerHTML='';
+
+  function draftSlot(p){
+    var proj=(p.college_projection||'').toLowerCase();
+    if(/all-nba|#1 overall/i.test(proj)) return {label:'All-NBA Talent — #1 Overall Conversation',color:'#fbbf24'};
+    if(/elite pg|elite point/i.test(proj)) return {label:'Elite PG Prospect — Lottery',color:'#a78bfa'};
+    if(/winning piece|efficient/i.test(proj)) return {label:'Highly Efficient Winning Piece',color:'#60a5fa'};
+    if(/higher on|role player|specialist/i.test(proj)) return {label:'Higher Than Consensus — Definite NBA Role',color:'#4ade80'};
+    if(/lower on|lower than/i.test(proj)) return {label:'Lower Than Consensus',color:'#f87171'};
+    if(/second round/i.test(proj)) return {label:'Second Round',color:'#94a3b8'};
+    return {label:p.college_projection||p.tier,color:'#94a3b8'};
+  }
+
+  function tagStyle(t){
+    if(/lockdown|disrupt|enforcer|switchable|defender|blitz|rim protect/i.test(t))
+      return 'background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.35);color:#93c5fd;';
+    if(/shoot|spacer|scorer|stampede|jet cut|dunker|pop|transition|creator|roll|finisher/i.test(t))
+      return 'background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);color:#86efac;';
+    return 'background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);color:#fdba74;';
+  }
+
+  // Group by tier
+  var tiers={};
+  draftBoard.forEach(function(p){
+    if(!tiers[p.tier])tiers[p.tier]=[];
+    tiers[p.tier].push(p);
+  });
+
+  var tierOrder=['Tier 1A','Tier 1B','Tier 2','Tier 3','Tier 4','Tier 5','Tier 6','Tier 7'];
+  var pick=1;
+
+  tierOrder.forEach(function(tier){
+    if(!tiers[tier]||!tiers[tier].length)return;
+    var header=document.createElement('div');
+    header.style.cssText='font-family:"DM Mono",monospace;font-size:9px;color:var(--accent);letter-spacing:.12em;padding:10px 0 6px;border-bottom:1px solid var(--border);margin-bottom:8px;margin-top:14px;';
+    header.textContent=tier.toUpperCase()+' — '+(TIERS[tier]&&TIERS[tier].label?TIERS[tier].label.toUpperCase():'');
+    container.appendChild(header);
+
+    tiers[tier].forEach(function(p){
+      var slot=draftSlot(p);
+      var tagHtml=(p.tags||[]).map(function(t){
+        return '<span style="display:inline-block;padding:3px 7px;border-radius:3px;font-size:9px;font-weight:600;margin:2px;letter-spacing:.03em;'+tagStyle(t)+'">'+t+'</span>';
+      }).join('');
+
+      var card=document.createElement('div');
+      card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:start;';
+      card.innerHTML=
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;color:var(--text3);padding-top:2px">'+pick+'</div>'
+        +'<div>'
+          +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;color:var(--text);line-height:1.1">'+p.name+'</div>'
+          +'<div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:\'DM Mono\',monospace">'+p.school+' · '+(p.pos==='guard'?'Guard':p.pos==='wing'?'Wing':'Big')+' · '+p.cls+'</div>'
+          +'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:2px">'+tagHtml+'</div>'
+          +'<div style="font-size:10px;color:var(--text2);margin-top:8px;line-height:1.6">'+p.nba_role+'</div>'
+          +(p.context?'<div style="font-size:9px;color:var(--text3);margin-top:5px;font-family:\'DM Mono\',monospace">'+p.context+'</div>':'')
+        +'</div>'
+        +'<div style="text-align:right;flex-shrink:0">'
+          +'<div style="padding:3px 8px;border-radius:4px;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.2);font-family:\'DM Mono\',monospace;font-size:9px;color:'+slot.color+';white-space:nowrap;letter-spacing:.04em">'+slot.label+'</div>'
+        +'</div>';
+
+      container.appendChild(card);
+      pick++;
+    });
+  });
+}
+
+// ── UCLA Roster ──
+function renderUCLARoster(){
+  const container=document.getElementById('ucla-roster-container');
+  container.innerHTML='';
+
+  // Fixed grade scale — 90+=A+, 87+=A, 84+=A-, 81+=B+, 78+=B, 75+=B-, 72+=C+, 69+=C, 66+=C-, 63+=D+, 60+=D, else D-
+  function GL(v){return v>=90?'A+':v>=87?'A':v>=84?'A-':v>=81?'B+':v>=78?'B':v>=75?'B-':v>=72?'C+':v>=69?'C':v>=66?'C-':v>=63?'D+':v>=60?'D':'D-';}
+  function GC(v){return v>=84?'#4ade80':v>=75?'#60a5fa':v>=63?'#fb923c':'#f87171';}
+  function BC(v){return v>=84?'#4ade80':v>=72?'#60a5fa':v>=60?'#fb923c':'#f87171';}
+
+  function tagStyle(t){
+    var tl=t.toLowerCase();
+    if(/lockdown|disrupt|enforcer|perimeter|switchable|defender|blitz|rim protect/i.test(tl))
+      return 'background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.35);color:#93c5fd;';
+    if(/shoot|spacer|scorer|stampede|jet cut|dunker|pop|transition|creator|roll|finisher/i.test(tl))
+      return 'background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);color:#86efac;';
+    return 'background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);color:#fdba74;';
+  }
+
+  UCLA_ROSTER.forEach(function(p){
+    var posLabel=p.pos==='guard'?'Guard':p.pos==='wing'?'Wing':'Big';
+    var cats=[
+      {label:'Shooting',val:p.shooting},
+      {label:'Defense',val:p.defense},
+      {label:'Rebounding',val:p.rebounding},
+      {label:'Playmaking',val:p.playmaking}
+    ];
+    // Sort cats by value desc for visual impact
+    cats.sort(function(a,b){return b.val-a.val;});
+
+    var tagHtml=(p.tags||[]).map(function(t){
+      return '<span style="display:inline-block;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;margin:2px;'+tagStyle(t)+'">'+t+'</span>';
+    }).join('');
+
+    var barsHtml=cats.map(function(cat){
+      return '<div style="margin-bottom:10px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<div style="font-size:11px;color:var(--text2);font-family:\'DM Mono\',monospace">'+cat.label+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<div style="font-size:13px;font-weight:700;color:'+GC(cat.val)+';font-family:\'Barlow Condensed\',sans-serif">'+cat.val+'</div>'
+        +'<div style="font-size:11px;font-weight:800;color:'+GC(cat.val)+';min-width:24px;text-align:right">'+GL(cat.val)+'</div>'
+        +'</div></div>'
+        +'<div style="background:var(--surface2);border-radius:3px;height:7px;overflow:hidden">'
+        +'<div style="height:100%;width:'+cat.val+'%;background:'+BC(cat.val)+';border-radius:3px;transition:width .4s"></div>'
+        +'</div></div>';
+    }).join('');
+
+    var card=document.createElement('div');
+    card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;';
+    card.innerHTML=
+      '<div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--text3);letter-spacing:.12em;margin-bottom:10px">PLAYER CARD</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
+        +'<div style="display:flex;gap:12px;align-items:center">'
+          +'<div style="width:44px;height:44px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--accent);font-family:\'Barlow Condensed\',sans-serif;flex-shrink:0">'+p.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2)+'</div>'
+          +'<div>'
+            +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1">'+p.name+'</div>'
+            +'<div style="font-size:11px;color:var(--text3);margin-top:3px">'+p.school+' · Big Ten · '+posLabel+' · '+p.cls+' · '+p.height+(p.wt?' · '+p.wt+'lbs':'')+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="text-align:right;flex-shrink:0">'
+          +'<div style="font-size:9px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">OVR</div>'
+          +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:32px;font-weight:800;color:'+GC(p.overall)+';line-height:1">'+p.overall+'</div>'
+          +'<div style="font-size:13px;font-weight:800;color:'+GC(p.overall)+'">'+GL(p.overall)+'</div>'
+        +'</div>'
+      +'</div>'
+
+      +'<div style="margin-bottom:14px">'
+        +'<div style="display:inline-block;padding:3px 10px;border-radius:4px;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.3);font-size:9px;color:var(--accent);letter-spacing:.06em;font-family:\'DM Mono\',monospace">'+p.tier+' · '+(TIERS[p.tier]&&TIERS[p.tier].label?TIERS[p.tier].label:'')+'</div>'
+      +'</div>'
+
+      +'<div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">'
+        +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:12px;font-family:\'DM Mono\',monospace">HOOPSHUB SKILL PROFILE</div>'
+        +barsHtml
+      +'</div>'
+
+      +'<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">'
+        +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:8px;font-family:\'DM Mono\',monospace">ROLE TAGS</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:4px">'+tagHtml+'</div>'
+      +'</div>'
+
+      +'<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">'
+        +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:6px;font-family:\'DM Mono\',monospace">SCOUTING SUMMARY</div>'
+        +'<div style="font-size:12px;color:var(--text2);line-height:1.75">'+p.summary+'</div>'
+      +'</div>'
+
+      +(p.context?'<div style="border-top:1px solid var(--border);padding-top:10px">'
+        +'<div style="font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:5px;font-family:\'DM Mono\',monospace">TACTICAL NOTE</div>'
+        +'<div style="font-size:11px;color:var(--text3);line-height:1.75">'+p.context+'</div>'
+      +'</div>':'');
+
+    container.appendChild(card);
+  });
+}
+
+// ── Scheme panel ──
+let lineupSlots=Array(5).fill(null);
+let selectedSlot=null;
+// ── Player Comparison Tiebreaker ──
+const CMP_FILTERS=[
+  // OFFENSIVE JOBS
+  {key:'catch_shoot',label:'Catch and Shoot',fn:function(p){var tstr=p.tags.join(' ');return p.shooting+(/shoot|spacer/i.test(tstr)?8:0);},desc:function(p){var tstr=p.tags.join(' ');return p.shooting+' shooting'+(/shoot|spacer/i.test(tstr)?', shooter tags':'');},film:'Who gets to their spot quicker and releases with more confidence off movement?'},
+  {key:'downhill',label:'Attacks Closeouts',fn:function(p){var tstr=p.tags.join(' ');return Math.round((p.shooting+p.playmaking)/2)+(/stampede|downhill|transition/i.test(tstr)?10:0);},desc:function(p){var tstr=p.tags.join(' ');return (/stampede|downhill/i.test(tstr)?'downhill tags, ':'')+' shoot '+p.shooting+' play '+p.playmaking;},film:'When the defense closes out hard, who actually makes them pay and who pulls up or resets?'},
+  {key:'dunker',label:'Dunker Spot Threat',fn:function(p){var tstr=p.tags.join(' ');return p.rebounding+(/dunker|lob|short roll|rim runner/i.test(tstr)?15:0);},desc:function(p){var tstr=p.tags.join(' ');return (/dunker|lob/i.test(tstr)?'dunker tags, ':'')+' reb '+p.rebounding;},film:'Who seals and finishes when the ball finds them at the rim off a drive or kick?'},
+  {key:'screener',label:'Sets Real Screens',fn:function(p){var tstr=p.tags.join(' ');return p.rebounding+(/enforcer|physical|glue/i.test(tstr)?10:0);},desc:function(p){var tstr=p.tags.join(' ');return (/enforcer|physical/i.test(tstr)?'physical tags, ':'')+' reb '+p.rebounding;},film:'Who sets a screen that actually moves the defense and who just goes through the motion?'},
+  {key:'rim_finishing',label:'Finishes Around the Rim',fn:function(p){var tstr=p.tags.join(' ');return p.rebounding+(/finisher|roll|short roll|dunk/i.test(tstr)?12:0);},desc:function(p){var tstr=p.tags.join(' ');return (/finisher|roll|dunk/i.test(tstr)?'finishing tags, ':'')+' reb '+p.rebounding;},film:'Who finishes through contact and who fades or avoids it?'},
+  {key:'flow',label:'Keeps Offense Moving',fn:function(p){var tstr=p.tags.join(' ');return 100-p.playmaking+(/low.usage|off.ball/i.test(tstr)?15:0);},desc:function(p){var tstr=p.tags.join(' ');return /low.usage|off.ball/i.test(tstr)?'off-ball, low usage':/caveman|low process/i.test(tstr)?'needs simple decisions':'check usage';},film:'Who makes a quick decision and keeps it moving versus who holds the ball and stalls the action?'},
+  // DEFENSIVE JOBS
+  {key:'ball_handler',label:'Guards Best Ball Handler',fn:function(p){var tstr=p.tags.join(' ');return p.defense+(/lockdown|enforcer|disrupt/i.test(tstr)?12:0)+(/1-4|1-5|2-3/i.test(tstr)?5:0);},desc:function(p){var tstr=p.tags.join(' ');return p.defense+' def'+(/lockdown|enforcer/i.test(tstr)?', lockdown tags':'');},film:'Who can stay in front of a quick guard for a full possession without getting separated or fouling?'},
+  {key:'versatility',label:'Guards Multiple Positions',fn:function(p){var tstr=p.tags.join(' ');return p.defense+(/1-5/i.test(tstr)?15:/1-4|3-5/i.test(tstr)?10:/2-3/i.test(tstr)?5:0);},desc:function(p){var tstr=p.tags.join(' ');var sw=/1-5/i.test(tstr)?'1-5':/1-4/i.test(tstr)?'1-4':/3-5/i.test(tstr)?'3-5':/2-3/i.test(tstr)?'2-3':'limited';return p.defense+' def, range '+sw;},film:'When they switch onto a different position, who competes and who gives up easy looks?'},
+  {key:'screens_def',label:'Fights Over Screens',fn:function(p){var tstr=p.tags.join(' ');return p.defense+(/blitz|hedge|enforcer/i.test(tstr)?10:0)+(/physical/i.test(tstr)?5:0);},desc:function(p){var tstr=p.tags.join(' ');return p.defense+' def'+(/blitz|hedge/i.test(tstr)?', blitz tags':'');},film:'Who gets through a screen and recovers versus who gets stuck and gives up a clean look?'},
+  {key:'deflections',label:'Creates Deflections',fn:function(p){var tstr=p.tags.join(' ');return p.defense+(/disrupt|lockdown|caveman/i.test(tstr)?10:0);},desc:function(p){var tstr=p.tags.join(' ');return p.defense+' def'+(/disrupt|caveman/i.test(tstr)?', disruptor tags':'');},film:'Who is active with their hands and reads passing lanes versus who plays passive positional defense?'},
+  {key:'rim',label:'Protects the Rim',fn:function(p){var tstr=p.tags.join(' ');return p.defense+p.rebounding+(/rim protector|anchor|blitz/i.test(tstr)?12:0);},desc:function(p){var tstr=p.tags.join(' ');return p.defense+' def '+p.rebounding+' reb'+(/rim protector|anchor/i.test(tstr)?', rim tags':'');},film:'When a guard gets beat, who steps up and makes it hard versus who backs off?'},
+  // SYSTEM FIT
+  {key:'low_usage',label:'Works Without the Ball',fn:function(p){var tstr=p.tags.join(' ');return 100-p.playmaking+(/low.usage|off.ball/i.test(tstr)?20:0);},desc:function(p){var tstr=p.tags.join(' ');return /low.usage|off.ball/i.test(tstr)?'explicitly off-ball':'check usage in eval';},film:'Who stays active, moves, and competes when they have not touched the ball for several possessions?'},
+  {key:'non_shooter',label:'Plays Next to a Non-Shooter',fn:function(p){return p.shooting+(p.shooting>=75?15:-20);},desc:function(p){return p.shooting>=75?p.shooting+' shooting — spacing rule satisfied':p.shooting+' shooting — spacing concern';},film:'Is the shooting real enough on tape to put them on the floor next to a non-shooter?'},
+  {key:'add_something',label:'Adds Something the Roster Lacks',fn:function(p){var s=p.overall;if(/lockdown|1-5|1-4|glass|dunker|short roll|blitz/i.test(p.tags.join(' ')))s+=10;return s;},desc:function(p){return p.overall+' ovr, '+p.tier+', tags: '+p.tags.slice(0,2).join(', ');},film:'Does this player bring a skill or dimension on tape that the roster does not already have?'},
+  {key:'plug_play',label:'Fits Into Multiple Lineups',fn:function(p){var tstr=p.tags.join(' ');return p.overall+(/1-5|1-4|3-5/i.test(tstr)?12:/2-3/i.test(tstr)?6:0)+(/low.usage|off.ball/i.test(tstr)?8:0);},desc:function(p){var tstr=p.tags.join(' ');return p.overall+' ovr'+(/1-5/i.test(tstr)?' guards 1-5':/1-4/i.test(tstr)?' switchable 1-4':'')+(/low.usage|off.ball/i.test(tstr)?', off-ball':'');},film:'Can this player function in a completely different lineup context or does he only work in one specific setup?'}
+];
+
+
+function buildCompCheckboxes(){
+  const container=document.getElementById('cmp-checkboxes');
+  if(!container)return;
+  container.innerHTML='';
+  CMP_FILTERS.forEach(f=>{
+    const wrap=document.createElement('label');
+    wrap.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text2);transition:all .15s';
+    wrap.innerHTML=`<input type="checkbox" value="${f.key}" style="accent-color:var(--accent)"> ${f.label}`;
+    wrap.querySelector('input').addEventListener('change',()=>{wrap.style.borderColor=wrap.querySelector('input').checked?'var(--accent)':'var(--border)';wrap.style.color=wrap.querySelector('input').checked?'var(--accent)':'var(--text2)';});
+    container.appendChild(wrap);
+  });
+}
+
+function populateCompDropdowns(){
+  const allPlayers=[...UCLA_ROSTER,...portalBoard,...hsBoard,...draftBoard];
+  ['cmp-a','cmp-b'].forEach(id=>{
+    const sel=document.getElementById(id);
+    const cur=sel.value;
+    sel.innerHTML='<option value="">select player...</option>';
+    allPlayers.forEach((p,i)=>{
+      const o=document.createElement('option');
+      o.value=String(i);
+      o.textContent=p.name+' ('+p.overall+' OVR)';
+      sel.appendChild(o);
+    });
+    if(cur)sel.value=cur;
+  });
+  buildCompCheckboxes();
+}
+
+function getCompPlayer(id){
+  const val=document.getElementById(id).value;
+  if(val==='')return null;
+  const allPlayers=[...UCLA_ROSTER,...portalBoard,...hsBoard,...draftBoard];
+  return allPlayers[parseInt(val)]||null;
+}
+
+function runComparison(){
+  const pa=getCompPlayer('cmp-a');
+  const pb=getCompPlayer('cmp-b');
+  const result=document.getElementById('cmp-result');
+  const checked=Array.from(document.querySelectorAll('#cmp-checkboxes input:checked')).map(el=>el.value);
+  if(!pa||!pb||checked.length===0){result.style.display='none';return;}
+  result.style.display='block';
+
+  const selectedFilters=CMP_FILTERS.filter(f=>checked.includes(f.key));
+  let winsA=0,winsB=0,ties=0;
+  const rows=[];
+
+  selectedFilters.forEach(f=>{
+    const sA=f.fn(pa),sB=f.fn(pb);
+    const diff=Math.abs(sA-sB);
+    const winner=sA>sB?'a':sB>sA?'b':null;
+    const margin=diff<=3?'even':diff<=8?'slight':diff<=15?'meaningful':'clear';
+    if(winner==='a')winsA++;
+    else if(winner==='b')winsB++;
+    else ties++;
+    rows.push({f,sA,sB,winner,diff,margin});
+  });
+
+  const overall=winsA>winsB?pa:winsB>winsA?pb:null;
+  const tightRows=rows.filter(r=>r.margin==='even'||r.margin==='slight');
+
+  result.innerHTML=`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:${overall===pa?'var(--green)':overall===pb?'var(--green)':'var(--blue)'}">${overall?overall.name+' does more for your needs':'too close to call'}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px">${pa.name} wins ${winsA} · ${pb.name} wins ${winsB}${ties>0?' · '+ties+' tied':''} across ${selectedFilters.length} dimensions</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        ${rows.map(r=>`
+          <div style="display:grid;grid-template-columns:110px 1fr 12px 1fr;gap:8px;align-items:center;padding:7px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${r.f.label}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:${r.winner==='a'?'var(--green)':'var(--text2)'}">
+              ${r.winner==='a'?'▲ ':r.winner===null?'— ':''}${pa.name}: ${r.f.desc(pa)}
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);text-align:center">${r.margin==='even'?'≈':r.winner==='a'?'›':'‹'}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:${r.winner==='b'?'var(--green)':'var(--text2)'}">
+              ${r.winner==='b'?'▲ ':r.winner===null?'— ':''}${pb.name}: ${r.f.desc(pb)}
+            </div>
+          </div>`).join('')}
+      </div>
+      ${tightRows.length>0?`
+      <div style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.06em;margin-bottom:8px">FILM QUESTIONS — where the margin is closest</div>
+        ${tightRows.map(r=>`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:6px;line-height:1.6"><span style="color:var(--text2)">${r.f.label}:</span> ${r.f.film}</div>`).join('')}
+      </div>`:''}
+    </div>`;
+}
+
+const allRosterPlayers=[...UCLA_ROSTER];
+function renderLineupPicker(){
+  const picker=document.getElementById('picker-list');
+  picker.innerHTML='';
+  allRosterPlayers.forEach(p=>{
+    const btn=document.createElement('button');
+    btn.className='btn btn-sm';
+    btn.textContent=p.name;
+    btn.onclick=()=>assignToSlot(p);
+    picker.appendChild(btn);
+  });
+  const clear=document.createElement('button');
+  clear.className='btn btn-sm';
+  clear.textContent='clear slot';
+  clear.onclick=()=>{if(selectedSlot!==null){lineupSlots[selectedSlot]=null;updateSlotDisplay();checkGeometry();}};
+  picker.appendChild(clear);
+  checkGeometry();
+}
+function selectLineupSlot(i){
+  selectedSlot=i;
+  document.getElementById('player-picker').style.display='block';
+  document.querySelectorAll('.lineup-slot').forEach((s,idx)=>s.classList.toggle('active',idx===i));
+}
+function assignToSlot(p){
+  if(selectedSlot!==null){lineupSlots[selectedSlot]=p;updateSlotDisplay();checkGeometry();}
+}
+function updateSlotDisplay(){
+  lineupSlots.forEach((p,i)=>{
+    document.getElementById('slot-name-'+i).textContent=p?p.name:'empty';
+    document.getElementById('slot-rating-'+i).textContent=p?p.overall:'—';
+  });
+}
+function checkGeometry(){
+  const alerts=document.getElementById('geometry-alerts');
+  alerts.innerHTML='';
+  const filled=lineupSlots.filter(Boolean);
+  if(filled.length<5){
+    if(filled.length>0){
+      alerts.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding:6px 0">${filled.length}/5 players selected — fill all 5 slots for lineup analysis</div>`;
+    }
+    return;
+  }
+
+  // Build lineup description from tags and grades
+  const allTags=filled.flatMap(p=>p.tags||[]);
+  const avgShoot=Math.round(filled.reduce((a,p)=>a+p.shooting,0)/5);
+  const avgDef=Math.round(filled.reduce((a,p)=>a+p.defense,0)/5);
+  const avgReb=Math.round(filled.reduce((a,p)=>a+p.rebounding,0)/5);
+
+  // Detect lineup characteristics
+  const shooters=filled.filter(p=>p.shooting>=75);
+  const defenders=filled.filter(p=>p.defense>=75);
+  const rebounders=filled.filter(p=>p.rebounding>=75);
+  const hasJovic=filled.find(p=>p.name==='Filip Jovic');
+  const hasBooker=filled.find(p=>p.name==='Xavier Booker');
+  const hasDailey=filled.find(p=>p.name==='Eric Dailey Jr.');
+  const hasPerry=filled.find(p=>p.name==='Trent Perry');
+  const hasPetty=filled.find(p=>p.name==='Jaylen Petty');
+
+  // Build description
+  let offDesc='', defDesc='', weakDesc='', typeDesc='';
+
+  if(shooters.length>=4) offDesc='Elite floor spacing — four shooters on the floor. Defense has to pick its poison.';
+  else if(shooters.length===3) offDesc='Solid spacing with three shooting threats. Guards can attack downhill with room to work.';
+  else if(shooters.length<=2) offDesc='Limited floor spacing — paint could get congested.';
+
+  if(hasBooker&&(hasPerry||hasPetty)) offDesc+=' Booker gravity clears the paint for downhill guards.';
+  if(hasJovic&&hasPerry) offDesc+=' Jovic/Perry 2-man game is a viable action when floor is spaced.';
+
+  if(defenders.length>=3) defDesc='Physical, switchable defensive unit. Multiple guys who can guard different positions.';
+  else if(defenders.length===2) defDesc='Serviceable defense. Two capable defenders to anchor the scheme.';
+  else defDesc='Defensive questions in this lineup — limited defensive versatility.';
+
+  if(hasJovic&&hasBooker&&hasDailey) weakDesc='Three frontcourt pieces together tightens the paint. Limited ball movement spacing.';
+  else if(!hasBooker&&hasJovic) weakDesc='No floor spacer at the 5 — defense can pack the paint without paying for it.';
+
+  if(shooters.length>=3&&defenders.length>=2) typeDesc='Balanced two-way unit — can score and defend.';
+  else if(shooters.length>=4) typeDesc='Offensive lineup — built to score, live with defensive tradeoffs.';
+  else if(defenders.length>=3) typeDesc='Defensive lineup — physical and disruptive, limits offensive ceiling.';
+  else typeDesc='Rotation lineup — mixed skill set.';
+
+  alerts.innerHTML=`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.08em;margin-bottom:8px">LINEUP PROFILE</div>
+      <div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:6px">${typeDesc}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:8px">${offDesc}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:${weakDesc?'8px':'0'}">${defDesc}</div>
+      ${weakDesc?`<div style="font-size:11px;color:var(--amber);line-height:1.7">${weakDesc}</div>`:''}
+      <div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        <div><div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">SPACING</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:${avgShoot>=75?'var(--green)':avgShoot>=60?'var(--blue)':'var(--amber)'}">${avgShoot}</div></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">DEFENSE</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:${avgDef>=75?'var(--green)':avgDef>=60?'var(--blue)':'var(--amber)'}">${avgDef}</div></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">REBOUNDING</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:${avgReb>=75?'var(--green)':avgReb>=60?'var(--blue)':'var(--amber)'}">${avgReb}</div></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.06em;margin-bottom:2px">SHOOTERS</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:${shooters.length>=4?'var(--green)':shooters.length>=3?'var(--blue)':'var(--amber)'}">${shooters.length}/5</div></div>
+      </div>
+    </div>`;
+}
+
+// ── Global search ──
+document.getElementById('global-search').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  if(!q)return;
+  const match=UCLA_ROSTER.find(p=>p.name.toLowerCase().includes(q));
+  if(match){switchModule('ucla',document.querySelector('[onclick*="ucla"]'));renderUCLARoster();}
+});
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('draft-count').textContent=draftBoard.length;
+  loadBoards();
+});
+if(document.readyState!=='loading'){
+  document.getElementById('draft-count').textContent=draftBoard.length;
+  loadBoards();
+}
+</script>
+</body>
+</html>
